@@ -1,0 +1,48 @@
+{
+  "TableName": "TeaTable",
+  "KeySchema": [
+    {
+      "AttributeName": "Name",
+      "KeyType": "HASH"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "Name",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "Type",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "SteepTimeSeconds",
+      "AttributeType": "N"
+    },
+    {
+      "AttributeName": "SteepTemperatureFahrenheit",
+      "AttributeType": "N"
+    },
+    {
+      "AttributeName": "SteepCount",
+      "AttributeType": "N"
+    }
+  ],
+  "Item": {
+    "Name": {
+      "S": ""
+    },
+    "Type": {
+      "S": "Green"
+    },
+    "SteepTimeSeconds": {
+      "N": "180"
+    },
+    "SteepTemperatureFahrenheit": {
+      "N": "180"
+    },
+    "SteepCount": {
+      "N": "0"
+    }
+  }
+}
