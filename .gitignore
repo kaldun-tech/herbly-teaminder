@@ -1,0 +1,14 @@
+# Python
+*.pyc
+__pycache__/
+*.egg-info/
+
+# JetBrains IDEs (.idea)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Virtual Environment
+venv/
+myenv/
