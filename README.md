@@ -21,3 +21,6 @@ Navigate to `http://127.0.0.1:5000` in your browser
 
 # Pylint
 Check code quality: `python -m pylint **/*.py`
+
+# Testing
+Run tests: `pytest tests/` `python -m unittest discover`
