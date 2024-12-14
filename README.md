@@ -23,4 +23,4 @@ Navigate to `http://127.0.0.1:5000` in your browser
 Check code quality: `python -m pylint **/*.py`
 
 # Testing
-Run tests: `pytest tests/` `python -m unittest discover`
+Run tests: `pytest tests/`
