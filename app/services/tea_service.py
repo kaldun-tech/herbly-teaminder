@@ -3,6 +3,9 @@ class TeaService:
     def __init__(self, tea_table):
         self.tea_table = tea_table
 
+    def get_teas(self):
+        return self.tea_table.get_teas()
+
     def get_tea_item(self, name):
         return self.tea_table.get_tea_item(name)
 

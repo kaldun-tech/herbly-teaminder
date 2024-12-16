@@ -40,11 +40,21 @@ def test_get_dynamodb_table(tea_table):
     assert table is not None
     assert table.name == table_name
 
+def test_get_all_tea_items(tea_table):
+    result = tea_table.get_all_tea_items()
+    assert result == []
+
 def test_create_tea_item(tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black'}
     result = tea_table.create_tea_item(tea_item)
     assert result['Name'] == {"S": 'Earl Grey'}
     assert result['Type'] == {"S": "Black"}
+    assert result['SteepTimeSeconds'] == {"N": 0}
+    assert result['SteepTemperatureFahrenheit'] == {"N": 0}
+    assert result['SteepCount'] == {"N": 0}
+    all_items = tea_table.get_all_tea_items()
+    assert len(all_items) == 1
+    assert all_items[0]['Name'] == {"S": 'Earl Grey'}
 
 def test_get_tea_item(tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black'}

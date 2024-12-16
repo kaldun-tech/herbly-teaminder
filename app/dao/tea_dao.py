@@ -9,8 +9,23 @@ class TeaDao:
         self.table_name = table_name
         self.dynamodb = boto3.resource('dynamodb', region_name)
 
+
     def get_table(self):
+        """Get database table"""
         return self.dynamodb.Table(self.table_name)
+
+
+    def get_all_tea_items(self):
+        """
+        Retrieve all tea items from the DynamoDB table.
+
+        Returns:
+            list: A list of dictionaries containing the tea item attributes.
+        """
+        table = self.get_table()
+        response = table.scan()
+        return response['Items']
+
 
     def get_tea_item(self, name):
         """
