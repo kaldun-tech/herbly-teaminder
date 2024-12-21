@@ -65,7 +65,7 @@ class TestTeaModel:
         }
         tea = Tea.from_dict(tea_dict)
         assert tea.name == "Earl Grey"
-        assert tea.type == "Black"
+        assert tea.tea_type == "Black"
         assert tea.steep_time_seconds == 3
         assert tea.steep_temperature_fahrenheit == 200
         assert tea.steep_count == 2

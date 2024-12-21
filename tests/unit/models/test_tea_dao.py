@@ -1,8 +1,8 @@
+import os
 import pytest
 import boto3
-import os
-from app.dao.tea_dao import TeaDao
 from moto import mock_aws
+from app.dao.tea_dao import TeaDao
 
 @pytest.fixture(scope="function")
 def aws_credentials():
@@ -13,17 +13,21 @@ def aws_credentials():
     os.environ["AWS_SESSION_TOKEN"] = "testing"
     os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 
+# pylint: disable=redefined-outer-name disable=unused-argument
 @pytest.fixture(scope="function")
 def dynamodb(aws_credentials):
-    """Return a mocked DynamoDB resource."""
+    """Return a mocked DynamoDB resource.
+    aws_credentials fixture is required to set up the environment even though not directly used"""
     with mock_aws():
         yield boto3.resource('dynamodb', region_name=os.environ["AWS_DEFAULT_REGION"])
 
+# pylint: disable=redefined-outer-name disable=unused-argument
 @pytest.fixture(scope="function")
 def mocked_aws(aws_credentials):
     """
     Mock all AWS interactions
     Requires you to create your own boto3 clients
+    aws_credentials fixture is required to set up the environment even though not directly used
     """
     with mock_aws():
         yield

@@ -4,8 +4,8 @@ class Tea:
     def __init__(self, name, tea_type, steep_time_seconds = 0, steep_temperature_fahrenheit = 0, steep_count = 0):
         if not name:
             raise ValueError("Name cannot be empty")
-        if not type:
-            raise ValueError("Type cannot be empty")
+        if not tea_type:
+            raise ValueError("Tea type cannot be empty")
         self.name = name
         self.tea_type = tea_type
         self.steep_time_seconds = steep_time_seconds

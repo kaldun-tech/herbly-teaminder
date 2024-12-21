@@ -1,10 +1,12 @@
-"""Services for teas"""
+from app.dao.tea_dao import TeaDao
+
 class TeaService:
-    def __init__(self, tea_table):
-        self.tea_table = tea_table
+    """Services for teas"""
+    def __init__(self, tea_dao: TeaDao):
+        self.tea_table = tea_dao
 
     def get_teas(self):
-        return self.tea_table.get_teas()
+        return self.tea_table.get_all_tea_items()
 
     def get_tea_item(self, name):
         return self.tea_table.get_tea_item(name)
@@ -17,6 +19,9 @@ class TeaService:
 
     def increment_steep_count(self, name):
         self.tea_table.increment_steep_count(name)
+
+    def clear_steep_count(self, name):
+        self.tea_table.clear_steep_count(name)
 
     def delete_tea_item(self, name):
         self.tea_table.delete_tea_item(name)
