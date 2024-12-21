@@ -9,3 +9,7 @@ def login():
 @bp.route('/register')
 def register():
     return render_template('register.html')
+
+@bp.route('/logout')
+def logout():
+    return render_template('logout.html')

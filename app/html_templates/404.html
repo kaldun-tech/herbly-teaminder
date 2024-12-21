@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - Herbly TeaMinder{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-1">404</h1>
+    <h2 class="display-4 mb-4">Page Not Found</h2>
+    <p class="lead">Oops! The page you're looking for seems to have steeped too long and disappeared.</p>
+    <div class="mt-4">
+        <a href="{{ url_for('index.index') }}" class="btn btn-primary">Go to Home</a>
+    </div>
+</div>
+{% endblock %}

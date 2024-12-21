@@ -1,10 +1,87 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>About</title>
-  </head>
-  <body>
-    <h1>About me</h1>
-    <p>I'm a software developer with a passion for building web applications.</p>
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}About - Herbly TeaMinder{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="display-4 mb-4">About Herbly TeaMinder</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="h4 mb-3">Your Personal Tea Steeping Assistant</h2>
+            <p class="lead">
+                Herbly TeaMinder is designed to help tea enthusiasts achieve the perfect cup every time. 
+                Whether you're a casual tea drinker or a connoisseur, our app helps you track and time 
+                your tea steeping with precision.
+            </p>
+
+            <h3 class="h5 mt-4">Features</h3>
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item">
+                    <i class="bi bi-clock"></i> Precise steeping timers for each tea
+                </li>
+                <li class="list-group-item">
+                    <i class="bi bi-thermometer-half"></i> Temperature recommendations
+                </li>
+                <li class="list-group-item">
+                    <i class="bi bi-list-ol"></i> Steep count tracking
+                </li>
+                <li class="list-group-item">
+                    <i class="bi bi-collection"></i> Personal tea collection management
+                </li>
+            </ul>
+
+            <h3 class="h5">Why Track Steeping?</h3>
+            <p>
+                Different teas require different steeping times and temperatures to achieve their optimal flavor. 
+                Over-steeping can lead to bitterness, while under-steeping might not release the full flavor profile. 
+                By tracking these parameters, you can consistently brew the perfect cup of tea.
+            </p>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title h5">Quick Tea Guide</h3>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tea Type</th>
+                                <th>Temperature</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Black</td>
+                                <td>200-212°F</td>
+                                <td>3-5 min</td>
+                            </tr>
+                            <tr>
+                                <td>Green</td>
+                                <td>170-180°F</td>
+                                <td>2-3 min</td>
+                            </tr>
+                            <tr>
+                                <td>Oolong</td>
+                                <td>180-190°F</td>
+                                <td>2-5 min</td>
+                            </tr>
+                            <tr>
+                                <td>White</td>
+                                <td>160-170°F</td>
+                                <td>1-3 min</td>
+                            </tr>
+                            <tr>
+                                <td>Herbal</td>
+                                <td>212°F</td>
+                                <td>5-7 min</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

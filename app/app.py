@@ -2,6 +2,7 @@
 from flask import Flask
 from app.config import config as app_config
 from app.routes.api.tea_routes import create_tea_routes
+from app.routes.pages import create_page_routes
 
 def create_app(config=None):
     """Create and configure the Flask application"""
@@ -15,11 +16,8 @@ def create_app(config=None):
         app.config.update(config)
 
     # Register blueprints
-    app.register_blueprint(create_tea_routes())
-
-    @app.route('/')
-    def home():
-        return 'Herbly TeaMinder'
+    app.register_blueprint(create_tea_routes(), url_prefix='/api')
+    app.register_blueprint(create_page_routes())
 
     return app
 

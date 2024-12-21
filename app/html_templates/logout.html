@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Logged Out - Herbly TeaMinder{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4 mb-4">You've Been Logged Out</h1>
+    <p class="lead">Thank you for using Herbly TeaMinder!</p>
+    <div class="mt-4">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Log In Again</a>
+        <a href="{{ url_for('index.index') }}" class="btn btn-outline-secondary ms-2">Go to Home</a>
+    </div>
+</div>
+{% endblock %}
