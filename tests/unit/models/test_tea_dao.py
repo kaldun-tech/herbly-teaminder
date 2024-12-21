@@ -35,59 +35,81 @@ def mocked_aws(aws_credentials):
 table_name = 'mock_tea_table'
 region_name = 'us-east-1'
 
-@pytest.fixture
-def tea_table():
+@pytest.fixture(scope="function")
+def tea_table_setup(dynamodb):
+    """Create the DynamoDB table for testing"""
+    table = dynamodb.create_table(
+        TableName=table_name,
+        KeySchema=[{'AttributeName': 'Name', 'KeyType': 'HASH'}],
+        AttributeDefinitions=[{'AttributeName': 'Name', 'AttributeType': 'S'}],
+        ProvisionedThroughput={'ReadCapacityUnits': 5, 'WriteCapacityUnits': 5}
+    )
+    table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+    return table
+
+@pytest.fixture(scope="function")
+def tea_table(tea_table_setup):
+    """Return TeaDao instance with mocked table"""
     return TeaDao(region_name, table_name)
 
-def test_get_dynamodb_table(tea_table):
+def test_get_table(mocked_aws, tea_table):
     table = tea_table.get_table()
     assert table is not None
     assert table.name == table_name
 
-def test_get_all_tea_items(tea_table):
+def test_get_all_tea_items(mocked_aws, tea_table):
     result = tea_table.get_all_tea_items()
     assert result == []
 
-def test_create_tea_item(tea_table):
+def test_create_tea_item(mocked_aws, tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black'}
     result = tea_table.create_tea_item(tea_item)
-    assert result['Name'] == {"S": 'Earl Grey'}
-    assert result['Type'] == {"S": "Black"}
-    assert result['SteepTimeSeconds'] == {"N": 0}
-    assert result['SteepTemperatureFahrenheit'] == {"N": 0}
-    assert result['SteepCount'] == {"N": 0}
+    assert result['Name'] == 'Earl Grey'
+    assert result['Type'] == 'Black'
+    assert result['SteepTimeSeconds'] == 0
+    assert result['SteepTemperatureFahrenheit'] == 0
+    assert result['SteepCount'] == 0
     all_items = tea_table.get_all_tea_items()
     assert len(all_items) == 1
-    assert all_items[0]['Name'] == {"S": 'Earl Grey'}
+    assert all_items[0]['Name'] == 'Earl Grey'
 
-def test_get_tea_item(tea_table):
+def test_get_tea_item(mocked_aws, tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black'}
     tea_table.create_tea_item(tea_item)
     result = tea_table.get_tea_item('Earl Grey')
-    assert result['Name'] == {"S": 'Earl Grey'}
-    assert result['Type'] == {"S": "Black"}
+    assert result['Name'] == 'Earl Grey'
+    assert result['Type'] == 'Black'
 
-def test_update_tea_item(tea_table):
+def test_update_tea_item(mocked_aws, tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black'}
     tea_table.create_tea_item(tea_item)
     tea_item['Type'] = 'Green'
     tea_item['SteepTemperatureFahrenheit'] = 180
     tea_table.update_tea_item(tea_item)
     result = tea_table.get_tea_item('Earl Grey')
-    assert result['Name'] == {"S": 'Earl Grey'}
-    assert result['Type'] == {"S": "Black"}
-    assert result['SteepTemperatureFahrenheit'] == {"N": 180}
+    assert result['Name'] == 'Earl Grey'
+    assert result['Type'] == 'Green'
+    assert result['SteepTemperatureFahrenheit'] == 180
 
-def test_increment_steep_count(tea_table):
+def test_increment_steep_count(mocked_aws, tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black', 'SteepCount': 0}
     tea_table.create_tea_item(tea_item)
     tea_table.increment_steep_count('Earl Grey')
     result = tea_table.get_tea_item('Earl Grey')
-    assert result['Name'] == {"S": 'Earl Grey'}
-    assert result['Type'] == {"S": "Black"}
-    assert result['SteepCount'] == {"N": 1}
+    assert result['Name'] == 'Earl Grey'
+    assert result['Type'] == 'Black'
+    assert result['SteepCount'] == 1
 
-def test_delete_tea_item(tea_table):
+def test_clear_steep_count(mocked_aws, tea_table):
+    tea_item = {'Name': 'Earl Grey', 'Type': 'Black', 'SteepCount': 1}
+    tea_table.create_tea_item(tea_item)
+    tea_table.clear_steep_count('Earl Grey')
+    result = tea_table.get_tea_item('Earl Grey')
+    assert result['Name'] == 'Earl Grey'
+    assert result['Type'] == 'Black'
+    assert result['SteepCount'] == 0
+
+def test_delete_tea_item(mocked_aws, tea_table):
     tea_item = {'Name': 'Earl Grey', 'Type': 'Black'}
     tea_table.create_tea_item(tea_item)
     tea_table.delete_tea_item('Earl Grey')

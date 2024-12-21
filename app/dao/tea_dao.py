@@ -38,7 +38,7 @@ class TeaDao:
             dict: A dictionary containing the tea item attributes.
         """
         table = self.get_table()
-        response = table.get_item(Key={"Name":{"S":name}})
+        response = table.get_item(Key={"Name": name})
         return response['Item']
 
 
@@ -50,16 +50,19 @@ class TeaDao:
             tea_item (dict): A dictionary containing the tea item attributes.
 
         Returns:
-            None
+            dict: The created item
         """
         table = self.get_table()
-        table.put_item(Item={
-            "Name": {"S": tea_item['Name']},
-            "Type": {"S": tea_item['Type']},
-            "SteepTimeSeconds": {"N": tea_item['SteepTimeSeconds']},
-            "SteepTemperatureFahrenheit": {"N": tea_item['SteepTemperatureFahrenheit']},
-            "SteepCount": {"N": tea_item['SteepCount']}
-        })
+        item = {
+            "Name": tea_item['Name'],
+            "Type": tea_item['Type'],
+            "SteepTimeSeconds": tea_item.get('SteepTimeSeconds', 0),
+            "SteepTemperatureFahrenheit": tea_item.get('SteepTemperatureFahrenheit', 0),
+            "SteepCount": tea_item.get('SteepCount', 0)
+        }
+        table.put_item(Item=item)
+        return item
+
 
     def update_tea_item(self, tea_item):
         """
@@ -77,24 +80,38 @@ class TeaDao:
         The method updates the existing tea item with the provided attributes.
         """
         table = self.get_table()
-        table.update_item(
-            Key={'Name': {"S": tea_item['Name']}},
-            UpdateExpression='set #type = :type, #steep_time_seconds = :steep_time_seconds, '
-                             '#steep_temperature_fahrenheit = :steep_temperature_fahrenheit, '
-                             '#steep_count = :steep_count',
-            ExpressionAttributeNames={
-                '#type': 'Type',
-                '#steep_time_seconds': 'SteepTimeSeconds',
-                '#steep_temperature_fahrenheit': 'SteepTemperatureFahrenheit',
-                '#steep_count': 'SteepCount'
-            },
-            ExpressionAttributeValues={
-                ':type': tea_item['Type'],
-                ':steep_time_seconds': tea_item['SteepTimeSeconds'],
-                ':steep_temperature_fahrenheit': tea_item['SteepTemperatureFahrenheit'],
-                ':steep_count': tea_item['SteepCount']
-            }
-        )
+        update_expr = []
+        expr_names = {}
+        expr_values = {}
+
+        if 'Type' in tea_item:
+            update_expr.append('#type = :type')
+            expr_names['#type'] = 'Type'
+            expr_values[':type'] = tea_item['Type']
+
+        if 'SteepTimeSeconds' in tea_item:
+            update_expr.append('#steep_time_seconds = :steep_time_seconds')
+            expr_names['#steep_time_seconds'] = 'SteepTimeSeconds'
+            expr_values[':steep_time_seconds'] = tea_item['SteepTimeSeconds']
+
+        if 'SteepTemperatureFahrenheit' in tea_item:
+            update_expr.append('#steep_temperature_fahrenheit = :steep_temperature_fahrenheit')
+            expr_names['#steep_temperature_fahrenheit'] = 'SteepTemperatureFahrenheit'
+            expr_values[':steep_temperature_fahrenheit'] = tea_item['SteepTemperatureFahrenheit']
+
+        if 'SteepCount' in tea_item:
+            update_expr.append('#steep_count = :steep_count')
+            expr_names['#steep_count'] = 'SteepCount'
+            expr_values[':steep_count'] = tea_item['SteepCount']
+
+        if update_expr:
+            table.update_item(
+                Key={"Name": tea_item['Name']},
+                UpdateExpression='set ' + ', '.join(update_expr),
+                ExpressionAttributeNames=expr_names,
+                ExpressionAttributeValues=expr_values
+            )
+
 
     def increment_steep_count(self, name):
         """
@@ -108,11 +125,12 @@ class TeaDao:
         """
         table = self.get_table()
         table.update_item(
-            Key={'Name': name},
+            Key={"Name": name},
             UpdateExpression='set #steep_count = #steep_count + :increment',
             ExpressionAttributeNames={'#steep_count': 'SteepCount'},
             ExpressionAttributeValues={':increment': 1}
         )
+
 
     def clear_steep_count(self, name):
         """
@@ -126,11 +144,12 @@ class TeaDao:
         """
         table = self.get_table()
         table.update_item(
-            Key={'Name': name},
+            Key={"Name": name},
             UpdateExpression='set #steep_count = :clear',
             ExpressionAttributeNames={'#steep_count': 'SteepCount'},
             ExpressionAttributeValues={':clear': 0}
         )
+
 
     def delete_tea_item(self, name):
         """
@@ -143,4 +162,4 @@ class TeaDao:
         DynamoDB table.
         """
         table = self.get_table()
-        table.delete_item(Key={'Name': name})
+        table.delete_item(Key={"Name": name})
