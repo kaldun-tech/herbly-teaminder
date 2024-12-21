@@ -5,7 +5,7 @@ This app helps users make a great cup of loose-leaf tea
 This app is meant to run on AWS infrastructure
 - Amazon DynamoDB implements the tea database
 - Python Flask framework implements the app
-- React will be used for the front-end
+- Amazon RDS Postgres implements the user database. Tea database may migrate to RDS in the future
 
 # Virtual Environment and Dependencies
 - Create virtual environment: `python -m venv myenv`
@@ -16,8 +16,13 @@ This app is meant to run on AWS infrastructure
 - Deactivate: `deactivate`
 
 # Run
-Execute `python3 app/app.py`
-Navigate to `http://127.0.0.1:5000` in your browser
+- Execute `python3 app/app.py`
+- Navigate to `http://127.0.0.1:5000` in your browser
+
+# Deployment
+- Starting with AWS Elastic Beanstalk
+- Amazon Cognito for user authentication
+- Look into using ECS with Fargate at 100+ user scale
 
 # Pylint
 Check code quality: `python -m pylint **/*.py`
