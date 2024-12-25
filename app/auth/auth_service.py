@@ -1,6 +1,6 @@
-from flask import current_app
+"""Authentication service module"""
+from flask import session
 
-class AuthService:
-    def authenticate(self, username, password):
-        # authentication logic here
-        pass
+def is_authenticated():
+    """Check if user is authenticated"""
+    return 'user_id' in session

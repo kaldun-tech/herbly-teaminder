@@ -2,14 +2,15 @@
 import os
 
 class Config:
-    AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+    """Configuration class for sensitive environment variables"""
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', 'dummy_key_id')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', 'dummy_secret_key')
 
-    DATABASE_USERNAME = os.environ['DATABASE_USERNAME']
-    DATABASE_PASSWORD = os.environ['DATABASE_PASSWORD']
+    DATABASE_USERNAME = os.environ.get('DATABASE_USERNAME', 'default_user')
+    DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD', 'default_password')
 
-    API_KEY = os.environ['API_KEY']
-    API_SECRET = os.environ['API_SECRET']
+    API_KEY = os.environ.get('API_KEY', 'dummy_api_key')
+    API_SECRET = os.environ.get('API_SECRET', 'dummy_api_secret')
 
-    SECRET_KEY = os.environ['SECRET_KEY']
-    ENCRYPTION_KEY = os.environ['ENCRYPTION_KEY']
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'development_secret_key')
+    ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', 'development_encryption_key')

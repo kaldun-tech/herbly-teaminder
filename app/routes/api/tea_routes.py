@@ -30,7 +30,7 @@ def create_tea_routes(tea_service=None):
         try:
             teas = tea_service.get_all_tea_items()
             return jsonify(teas), 200
-        except Exception as e:
+        except ValueError as e:
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/tea/<name>', methods=['GET'])
@@ -57,7 +57,7 @@ def create_tea_routes(tea_service=None):
             # Create tea item
             tea_item = tea_service.create_tea_item(data)
             return jsonify(tea_item), 201
-        except Exception as e:
+        except ValueError as e:
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/tea/<name>', methods=['DELETE'])
@@ -68,7 +68,7 @@ def create_tea_routes(tea_service=None):
             return '', 204
         except KeyError:
             return jsonify({'error': 'Tea not found'}), 404
-        except Exception as e:
+        except ValueError as e:
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/tea/<name>/increment', methods=['POST'])
@@ -80,7 +80,7 @@ def create_tea_routes(tea_service=None):
             return jsonify(tea), 200
         except KeyError:
             return jsonify({'error': 'Tea not found'}), 404
-        except Exception as e:
+        except ValueError as e:
             return jsonify({'error': str(e)}), 500
 
     return tea_routes

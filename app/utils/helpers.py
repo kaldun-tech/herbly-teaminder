@@ -6,10 +6,9 @@ from datetime import datetime
 def format_date(date):
     if date is None:
         return None
-    elif isinstance(date, datetime):
+    if isinstance(date, datetime):
         return date.strftime('%Y-%m-%d')
-    else:
-        raise ValueError("Invalid date object")
+    raise ValueError("Invalid date object")
 
 def validate_email(email):
     pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"

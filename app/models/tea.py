@@ -1,6 +1,7 @@
 """Defines the Tea class"""
 
 class Tea:
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, name, tea_type, steep_time_seconds = 0, steep_temperature_fahrenheit = 0, steep_count = 0):
         if not name:
             raise ValueError("Name cannot be empty")

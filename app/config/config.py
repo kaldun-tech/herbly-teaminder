@@ -1,9 +1,7 @@
 """Master configuration class"""
-from dev import Config as DevConfig
-from database import Config as DatabaseConfig
-from prod import Config as ProdConfig
-from secrets import Config as SecretsConfig
+from app.config.secrets import Config as SecretsConfig
+from app.config.database import Config as DatabaseConfig
+from app.config.dev import Config as DevConfig
 
 class Config(DevConfig, DatabaseConfig, SecretsConfig):
     """Builds configuration for development"""
-    pass
