@@ -1,5 +1,7 @@
 [MAIN]
 
+# Configuration file for pylintrc
+
 # Specify the minimum Python version to target
 py-version=3.7
 
