@@ -16,8 +16,9 @@ def create_app(config=None):
         app.config.update(config)
 
     # Register blueprints
-    app.register_blueprint(create_tea_routes(), url_prefix='/api')
-    app.register_blueprint(create_page_routes())
+    with app.app_context():
+        app.register_blueprint(create_tea_routes(), url_prefix='/api')
+        app.register_blueprint(create_page_routes())
 
     return app
 
