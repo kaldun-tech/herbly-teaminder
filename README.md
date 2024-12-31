@@ -16,7 +16,7 @@ This app is meant to run on AWS infrastructure
 - Deactivate: `deactivate`
 
 # Run
-- Execute `python3 app/app.py`
+- Execute `python -m app.app`
 - Navigate to `http://127.0.0.1:5000` in your browser
 
 # Deployment
