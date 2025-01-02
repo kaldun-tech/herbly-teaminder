@@ -15,5 +15,4 @@ myenv/
 
 # Environment variables
 .env
-scripts/set_env.ps1
-scripts/set_env.sh
+scripts/set_env.*
