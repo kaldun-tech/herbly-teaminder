@@ -59,12 +59,12 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="steepTemp" class="form-label">Steep Temperature (°F)</label>
-                        <input type="number" class="form-control" id="steepTemp" required>
+                        <label for="steep-temperature" class="form-label">Steep Temperature (°F)</label>
+                        <input type="number" class="form-control" id="steep-temperature" required>
                     </div>
                     <div class="mb-3">
-                        <label for="steepTime" class="form-label">Steep Time (seconds)</label>
-                        <input type="number" class="form-control" id="steepTime" required>
+                        <label for="steep-time" class="form-label">Steep Time (minutes)</label>
+                        <input type="number" class="form-control" id="steep-time" required>
                     </div>
                 </form>
             </div>
@@ -103,14 +103,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load teas on page load
     loadTeas();
 
+    // Fetch tea defaults
+    let teaDefaults = {};
+    fetch('/api/defaults')
+        .then(response => response.json())
+        .then(data => {
+            teaDefaults = data;
+        })
+        .catch(error => console.error('Error loading tea defaults:', error));
+
+    // Add tea type change handler
+    document.getElementById('teaType').addEventListener('change', function() {
+        const selectedType = this.value;
+        const tempInput = document.getElementById('steep-temperature');
+        const timeInput = document.getElementById('steep-time');
+        
+        // Only set default values if the fields are empty
+        if (tempInput.value.trim() === '' && selectedType in teaDefaults) {
+            tempInput.value = teaDefaults[selectedType].temperature;
+        }
+        if (timeInput.value.trim() === '' && selectedType in teaDefaults) {
+            timeInput.value = teaDefaults[selectedType].steep_time;
+        }
+    });
+
     // Add tea form submission
     document.getElementById('save-tea').addEventListener('click', function() {
         const form = document.getElementById('add-tea-form');
         const teaData = {
             Name: document.getElementById('teaName').value,
             Type: document.getElementById('teaType').value,
-            SteepTemperatureFahrenheit: parseInt(document.getElementById('steepTemp').value),
-            SteepTimeSeconds: parseInt(document.getElementById('steepTime').value),
+            SteepTemperatureFahrenheit: parseInt(document.getElementById('steep-temperature').value),
+            SteepTimeSeconds: parseInt(document.getElementById('steep-time').value),
             SteepCount: 0
         };
 
@@ -138,29 +162,29 @@ function loadTeas() {
             const teaList = document.getElementById('tea-list');
             teaList.innerHTML = '';
             teas.forEach(tea => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${tea.Name}</td>
-                    <td>${tea.Type}</td>
-                    <td>${tea.SteepTemperatureFahrenheit}°F</td>
-                    <td>${formatTime(tea.SteepTimeSeconds)}</td>
-                    <td>${tea.SteepCount}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="startTimer('${tea.Name}', ${tea.SteepTimeSeconds})">
-                            Start Timer
-                        </button>
-                        <button class="btn btn-sm btn-secondary" onclick="incrementSteepCount('${tea.Name}')">
-                            +1 Steep
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteTea('${tea.Name}')">
-                            Delete
-                        </button>
-                    </td>
+                const card = document.createElement('div');
+                card.className = 'col-md-4 mb-4';
+                card.innerHTML = `
+                    <div class="card tea-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${tea.Name}</h5>
+                            <p class="card-text">
+                                Type: ${tea.Type}<br>
+                                Temperature: ${tea.SteepTemperatureFahrenheit}°F<br>
+                                Steep Time: ${tea.SteepTimeSeconds / 60} minutes<br>
+                                Times Steeped: ${tea.SteepCount}
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-primary" onclick="startTimer('${tea.Name}', ${tea.SteepTimeSeconds})">Start Timer</button>
+                                <button class="btn btn-danger" onclick="deleteTea('${tea.Name}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
                 `;
-                teaList.appendChild(row);
+                teaList.appendChild(card);
             });
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error loading teas:', error));
 }
 
 let timerInterval;
@@ -191,14 +215,6 @@ function startTimer(teaName, seconds) {
         timeLeft = seconds;
         document.getElementById('timer-display').textContent = formatTime(timeLeft);
     });
-}
-
-function incrementSteepCount(teaName) {
-    fetch(`/api/tea/${teaName}/increment`, {
-        method: 'POST'
-    })
-    .then(() => loadTeas())
-    .catch(error => console.error('Error:', error));
 }
 
 function deleteTea(teaName) {

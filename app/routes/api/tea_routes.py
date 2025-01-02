@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.tea_service import TeaService
 from app.dao.tea_dao import TeaDao
+from app.config.tea_defaults import TEA_DEFAULTS
 
 def create_tea_routes(tea_service=None):
     """Factory function to create tea routes blueprint with optional service injection"""
@@ -110,5 +111,10 @@ def create_tea_routes(tea_service=None):
             return jsonify({'error': 'Tea not found'}), 404
         except ValueError as e:
             return jsonify({'error': str(e)}), 500
+
+    @tea_routes.route('/defaults', methods=['GET'])
+    def get_tea_defaults():
+        """Get default values for different tea types"""
+        return jsonify(TEA_DEFAULTS)
 
     return tea_routes
