@@ -35,7 +35,7 @@ class TestTeaModel:
         assert tea.steep_count == 2
 
     def test_init_with_all_params(self):
-        tea = Tea("Green Tea", "Green", steep_time_minutes=2, 
+        tea = Tea("Green Tea", "Green", steep_time_minutes=2,
                  steep_temperature_fahrenheit=175, steep_count=1)
         assert tea.name == "Green Tea"
         assert tea.tea_type == "Green"
@@ -44,9 +44,9 @@ class TestTeaModel:
         assert tea.steep_count == 1
 
     def test_repr(self):
-        tea = Tea("Earl Grey", "Black")
-        assert repr(tea) == ('Tea(name="Earl Grey", type="Black", steep_time_minutes=0,'
-                           'steep_temperature_fahrenheit=0, steep_count=0)')
+        tea = Tea("Earl Grey", "Black", steep_time_minutes=3, steep_temperature_fahrenheit=200)
+        expected = 'Tea(name="Earl Grey", tea_type="Black", steep_time_minutes=3, steep_temperature_fahrenheit=200, steep_count=0)'
+        assert repr(tea) == expected
 
     def test_eq(self):
         tea1 = Tea("Earl Grey", "Black", steep_time_minutes=3)

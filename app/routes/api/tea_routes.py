@@ -92,8 +92,7 @@ def create_tea_routes(tea_service=None):
         """Increment steep count for a tea"""
         try:
             service = get_service()
-            service.increment_steep_count(name)
-            tea = service.get_tea_item(name)
+            tea = service.increment_steep_count(name)
             return jsonify(tea), 200
         except KeyError:
             return jsonify({'error': 'Tea not found'}), 404

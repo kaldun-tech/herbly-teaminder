@@ -13,6 +13,13 @@ def mock_tea_dao():
         {"Name": "Earl Grey", "Type": "Black", "SteepTimeMinutes": 3, "SteepTemperatureFahrenheit": 200, "SteepCount": 0},
         {"Name": "Oolong", "Type": "Green", "SteepTimeMinutes": 2, "SteepTemperatureFahrenheit": 175, "SteepCount": 0}
     ]
+
+    def mock_increment_steep(name):
+        return {"Name": name, "Type": "Black", "SteepTimeMinutes": 3, "SteepTemperatureFahrenheit": 200, "SteepCount": 1}
+
+    mock_dao.increment_steep_count.side_effect = mock_increment_steep
+    mock_dao.get_tea_item.return_value = {"Name": "Earl Grey", "Type": "Black", "SteepTimeMinutes": 3,
+        "SteepTemperatureFahrenheit": 200, "SteepCount": 0}
     return mock_dao
 
 @pytest.fixture
@@ -175,7 +182,7 @@ def test_create_tea_with_defaults(client, mock_tea_dao):
     }
     mock_tea_dao.get_tea_item.return_value = None
     mock_tea_dao.create_tea_item.return_value = expected_tea
-    
+
     response = client.post('/api/teas', json=minimal_tea)
     assert response.status_code == 201
     data = response.get_json()
@@ -193,7 +200,7 @@ def test_update_tea_steep_time(client, mock_tea_dao):
         "SteepCount": 0
     }
     mock_tea_dao.get_tea_item.return_value = original_tea
-    
+
     update_data = {
         "Name": "Green Tea",
         "SteepTimeMinutes": 3
@@ -201,7 +208,7 @@ def test_update_tea_steep_time(client, mock_tea_dao):
     expected_tea = original_tea.copy()
     expected_tea["SteepTimeMinutes"] = 3
     mock_tea_dao.update_tea_item.return_value = expected_tea
-    
+
     response = client.put('/api/teas/Green Tea', json=update_data)
     assert response.status_code == 200
     data = response.get_json()
@@ -214,13 +221,13 @@ def test_get_tea_defaults(client):
     response = client.get('/api/defaults')
     assert response.status_code == 200
     data = response.get_json()
-    
-    # Verify structure of defaults
+
+    # Check structure for each tea type
     for tea_type in data:
-        assert "SteepTimeMinutes" in data[tea_type]
-        assert "SteepTemperatureFahrenheit" in data[tea_type]
-        assert isinstance(data[tea_type]["SteepTimeMinutes"], int)
-        assert isinstance(data[tea_type]["SteepTemperatureFahrenheit"], int)
+        assert 'steep_time' in data[tea_type]
+        assert 'temperature' in data[tea_type]
+        assert isinstance(data[tea_type]['steep_time'], int)
+        assert isinstance(data[tea_type]['temperature'], int)
 
 def test_increment_steep_preserves_time(client, mock_tea_dao):
     """Test that incrementing steep count preserves steep time"""
@@ -231,14 +238,17 @@ def test_increment_steep_preserves_time(client, mock_tea_dao):
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 0
     }
-    mock_tea_dao.get_tea_item.return_value = original_tea
-    
+
     incremented_tea = original_tea.copy()
     incremented_tea["SteepCount"] = 1
-    mock_tea_dao.increment_steep_count.return_value = incremented_tea
-    
-    response = client.post('/api/teas/Green Tea/increment')
+
+    # First return original tea, then return incremented tea
+    mock_tea_dao.get_tea_item.side_effect = [original_tea, incremented_tea]
+    # Override the default side_effect with a return_value
+    mock_tea_dao.increment_steep_count = Mock(return_value=incremented_tea)
+
+    response = client.post('/api/teas/Green Tea/steep')
     assert response.status_code == 200
     data = response.get_json()
-    assert data["SteepTimeMinutes"] == 2  # Preserved
-    assert data["SteepCount"] == 1  # Incremented
+    assert data["SteepTimeMinutes"] == 2  # Time preserved
+    assert data["SteepCount"] == 1  # Count incremented

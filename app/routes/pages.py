@@ -26,12 +26,12 @@ def create_page_routes():
         return render_template('500.html'), 500
 
     @page_routes.errorhandler(404)
-    def not_found_error(error):
+    def not_found_error():
         """Handle 404 errors"""
         return render_template('404.html'), 404
 
     @page_routes.errorhandler(500)
-    def internal_error(error):
+    def internal_error():
         """Handle 500 errors"""
         return render_template('500.html'), 500
 

@@ -90,9 +90,9 @@ class TeaDao:
             expr_values[':type'] = tea_item['Type']
 
         if 'SteepTimeMinutes' in tea_item:
-            update_expr.append('#steep_time_seconds = :steep_time_seconds')
-            expr_names['#steep_time_seconds'] = 'SteepTimeMinutes'
-            expr_values[':steep_time_seconds'] = tea_item['SteepTimeMinutes']
+            update_expr.append('#steep_time_minutes = :steep_time_minutes')
+            expr_names['#steep_time_minutes'] = 'SteepTimeMinutes'
+            expr_values[':steep_time_minutes'] = tea_item['SteepTimeMinutes']
 
         if 'SteepTemperatureFahrenheit' in tea_item:
             update_expr.append('#steep_temperature_fahrenheit = :steep_temperature_fahrenheit')
@@ -120,16 +120,18 @@ class TeaDao:
         Args:
             name (str): The name of the tea item.
 
-        The method increments the existing steep count for the tea item with the
-        provided name.
+        Returns:
+            dict: The updated tea item
         """
         table = self.get_table()
         table.update_item(
             Key={"Name": name},
             UpdateExpression='set #steep_count = #steep_count + :increment',
             ExpressionAttributeNames={'#steep_count': 'SteepCount'},
-            ExpressionAttributeValues={':increment': 1}
+            ExpressionAttributeValues={':increment': 1},
+            ReturnValues="ALL_NEW"
         )
+        return self.get_tea_item(name)
 
 
     def clear_steep_count(self, name):
