@@ -16,7 +16,7 @@
       "AttributeType": "S"
     },
     {
-      "AttributeName": "SteepTimeSeconds",
+      "AttributeName": "SteepTimeMinutes",
       "AttributeType": "N"
     },
     {
@@ -35,8 +35,8 @@
     "Type": {
       "S": "Dark"
     },
-    "SteepTimeSeconds": {
-      "N": "300"
+    "SteepTimeMinutes": {
+      "N": "5"
     },
     "SteepTemperatureFahrenheit": {
       "N": "212"

@@ -32,7 +32,7 @@ class Tea:
         return {
             'Name': self.name,
             'Type': self.tea_type,
-            'SteepTimeSeconds': self.steep_time_seconds,
+            'SteepTimeMinutes': self.steep_time_seconds,
             'SteepTemperatureFahrenheit': self.steep_temperature_fahrenheit,
             'SteepCount': self.steep_count
         }
@@ -48,7 +48,7 @@ class Tea:
         return Tea(
             tea_dict.get('Name'),
             tea_dict.get('Type'),
-            tea_dict.get('SteepTimeSeconds', 0),
+            tea_dict.get('SteepTimeMinutes', 0),
             tea_dict.get('SteepTemperatureFahrenheit', 0),
             tea_dict.get('SteepCount', 0),
         )

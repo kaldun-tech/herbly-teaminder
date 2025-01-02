@@ -49,7 +49,7 @@ class TestTeaModel:
         expected_dict = {
             "Name": "Earl Grey",
             "Type": "Black",
-            "SteepTimeSeconds": 0,
+            "SteepTimeMinutes": 0,
             "SteepTemperatureFahrenheit": 0,
             "SteepCount": 0
         }
@@ -59,7 +59,7 @@ class TestTeaModel:
         tea_dict = {
             "Name": "Earl Grey",
             "Type": "Black",
-            "SteepTimeSeconds": 3,
+            "SteepTimeMinutes": 3,
             "SteepTemperatureFahrenheit": 200,
             "SteepCount": 2
         }

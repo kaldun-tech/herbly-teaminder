@@ -10,8 +10,8 @@ from app.routes.api.tea_routes import create_tea_routes
 def mock_tea_dao():
     mock_dao = Mock()
     mock_dao.get_all_tea_items.return_value = [
-        {"Name": "Earl Grey", "Type": "Black", "SteepTimeSeconds": 180, "SteepTemperatureFahrenheit": 200, "SteepCount": 0},
-        {"Name": "Oolong", "Type": "Green", "SteepTimeSeconds": 120, "SteepTemperatureFahrenheit": 175, "SteepCount": 0}
+        {"Name": "Earl Grey", "Type": "Black", "SteepTimeMinutes": 3, "SteepTemperatureFahrenheit": 200, "SteepCount": 0},
+        {"Name": "Oolong", "Type": "Green", "SteepTimeMinutes": 2, "SteepTemperatureFahrenheit": 175, "SteepCount": 0}
     ]
     return mock_dao
 
@@ -48,7 +48,7 @@ def sample_tea_data():
     return {
         "Name": "Green Tea",
         "Type": "Green",
-        "SteepTimeSeconds": 120,
+        "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 0
     }
@@ -75,7 +75,7 @@ def test_get_tea(client, mock_tea_dao):
     mock_tea_dao.get_tea_item.return_value = {
         "Name": "Earl Grey",
         "Type": "Black",
-        "SteepTimeSeconds": 180,
+        "SteepTimeMinutes": 3,
         "SteepTemperatureFahrenheit": 200,
         "SteepCount": 0
     }
@@ -96,7 +96,7 @@ def test_update_tea(client, mock_tea_dao, sample_tea_data):
     mock_tea_dao.get_tea_item.return_value = {
         "Name": "Green Tea",
         "Type": "Green",
-        "SteepTimeSeconds": 120,
+        "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 0
     }
@@ -112,7 +112,7 @@ def test_delete_tea(client, mock_tea_dao):
     mock_tea_dao.get_tea_item.return_value = {
         "Name": "Green Tea",
         "Type": "Green",
-        "SteepTimeSeconds": 120,
+        "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 0
     }
@@ -127,7 +127,7 @@ def test_increment_steep(client, mock_tea_dao):
     mock_tea_dao.get_tea_item.return_value = {
         "Name": "Green Tea",
         "Type": "Green",
-        "SteepTimeSeconds": 120,
+        "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 0
     }
@@ -136,7 +136,7 @@ def test_increment_steep(client, mock_tea_dao):
     mock_tea_dao.increment_steep_count.return_value = {
         "Name": "Green Tea",
         "Type": "Green",
-        "SteepTimeSeconds": 120,
+        "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 1
     }
@@ -151,7 +151,7 @@ def test_clear_steep(client, mock_tea_dao):
     mock_tea_dao.get_tea_item.return_value = {
         "Name": "Green Tea",
         "Type": "Green",
-        "SteepTimeSeconds": 120,
+        "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
         "SteepCount": 3
     }

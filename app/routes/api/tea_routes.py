@@ -48,17 +48,16 @@ def create_tea_routes(tea_service=None):
     @tea_routes.route('/teas', methods=['POST'])
     def create_tea():
         """Create a new tea"""
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
-
-        required_fields = ['Name', 'Type']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-
         try:
-            # Create tea item
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
+
+            required_fields = ['Name', 'Type']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({'error': f'Missing required field: {field}'}), 400
+
             tea_item = get_service().create_tea_item(data)
             return jsonify(tea_item), 201
         except ValueError as e:

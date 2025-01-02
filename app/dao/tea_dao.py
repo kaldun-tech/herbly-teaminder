@@ -56,7 +56,7 @@ class TeaDao:
         item = {
             "Name": tea_item['Name'],
             "Type": tea_item['Type'],
-            "SteepTimeSeconds": tea_item.get('SteepTimeSeconds', 0),
+            "SteepTimeMinutes": tea_item.get('SteepTimeMinutes', 0),
             "SteepTemperatureFahrenheit": tea_item.get('SteepTemperatureFahrenheit', 0),
             "SteepCount": tea_item.get('SteepCount', 0)
         }
@@ -73,7 +73,7 @@ class TeaDao:
             tea_item (dict): A dictionary containing the tea item attributes:
                 - 'Name' (str): The name of the tea.
                 - 'Type' (str): The type of the tea.
-                - 'SteepTimeSeconds' (int): The steep time in seconds.
+                - 'SteepTimeMinutes' (int): The steep time in minutes.
                 - 'SteepTemperatureFahrenheit' (int): The steep temperature in Fahrenheit.
                 - 'SteepCount' (int): The number of times the tea has been steeped.
 
@@ -89,10 +89,10 @@ class TeaDao:
             expr_names['#type'] = 'Type'
             expr_values[':type'] = tea_item['Type']
 
-        if 'SteepTimeSeconds' in tea_item:
+        if 'SteepTimeMinutes' in tea_item:
             update_expr.append('#steep_time_seconds = :steep_time_seconds')
-            expr_names['#steep_time_seconds'] = 'SteepTimeSeconds'
-            expr_values[':steep_time_seconds'] = tea_item['SteepTimeSeconds']
+            expr_names['#steep_time_seconds'] = 'SteepTimeMinutes'
+            expr_values[':steep_time_seconds'] = tea_item['SteepTimeMinutes']
 
         if 'SteepTemperatureFahrenheit' in tea_item:
             update_expr.append('#steep_temperature_fahrenheit = :steep_temperature_fahrenheit')

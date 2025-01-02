@@ -66,7 +66,7 @@ def test_create_tea_item(mocked_aws, tea_table):
     result = tea_table.create_tea_item(tea_item)
     assert result['Name'] == 'Earl Grey'
     assert result['Type'] == 'Black'
-    assert result['SteepTimeSeconds'] == 0
+    assert result['SteepTimeMinutes'] == 0
     assert result['SteepTemperatureFahrenheit'] == 0
     assert result['SteepCount'] == 0
     all_items = tea_table.get_all_tea_items()

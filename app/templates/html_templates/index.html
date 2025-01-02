@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Name: document.getElementById('teaName').value,
             Type: document.getElementById('teaType').value,
             SteepTemperatureFahrenheit: parseInt(document.getElementById('steep-temperature').value),
-            SteepTimeSeconds: parseInt(document.getElementById('steep-time').value),
+            SteepTimeMinutes: parseInt(document.getElementById('steep-time').value),
             SteepCount: 0
         };
 
@@ -171,11 +171,11 @@ function loadTeas() {
                             <p class="card-text">
                                 Type: ${tea.Type}<br>
                                 Temperature: ${tea.SteepTemperatureFahrenheit}°F<br>
-                                Steep Time: ${tea.SteepTimeSeconds / 60} minutes<br>
+                                Steep Time: ${tea.SteepTimeMinutes} minutes<br>
                                 Times Steeped: ${tea.SteepCount}
                             </p>
                             <div class="d-flex justify-content-between">
-                                <button class="btn btn-primary" onclick="startTimer('${tea.Name}', ${tea.SteepTimeSeconds})">Start Timer</button>
+                                <button class="btn btn-primary" onclick="startTimer('${tea.Name}', ${tea.SteepTimeMinutes * 60})">Start Timer</button>
                                 <button class="btn btn-danger" onclick="deleteTea('${tea.Name}')">Delete</button>
                             </div>
                         </div>
