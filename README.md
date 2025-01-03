@@ -7,58 +7,86 @@ This app is meant to run on AWS infrastructure
 - Python Flask framework implements the app
 - Amazon RDS Postgres implements the user database. Tea database may migrate to RDS in the future
 
-## Set up AWS Credentials
+## AWS Credentials and Security
 
-This application uses AWS DynamoDB as its database. You'll need to set up AWS credentials to run the application. Here's how:
+This application uses AWS best practices for security and credentials management:
 
-1. Get your AWS credentials:
-   - Log into the [AWS Management Console](https://aws.amazon.com/console/)
-   - Go to IAM (Identity and Access Management)
-   - Create a new user or select an existing one
-   - Under "Security credentials", create an access key
-   - Save both the Access Key ID and Secret Access Key
+### Local Development
+For local development, you have three options to set up AWS credentials:
 
-2. Set up your credentials using one of these methods:
-
-   a. Using environment variables directly:
-   ```bash
-   # PowerShell
-   $env:AWS_ACCESS_KEY_ID = "your_access_key_id"
-   $env:AWS_SECRET_ACCESS_KEY = "your_secret_access_key"
-
-   # Bash
-   export AWS_ACCESS_KEY_ID="your_access_key_id"
-   export AWS_SECRET_ACCESS_KEY="your_secret_access_key"
-   ```
-
-   b. Using the provided scripts:
-   ```bash
-   # PowerShell
-   ./scripts/set_env.ps1
-
-   # Bash
-   source ./scripts/set_env.sh
-   ```
+1. **Environment Variables** (Recommended for testing):
    
-   c. Using a .env file:
+   Create credential scripts in your home directory:
+
    ```bash
-   # Copy the template
+   # Linux/Mac (~/.aws/set_env.sh)
+   mkdir -p ~/.aws
+   cp scripts/set_env.sh ~/.aws/
+   chmod 600 ~/.aws/set_env.sh  # Restrict permissions
+   source ~/.aws/set_env.sh
+   ```
+
+   ```powershell
+   # Windows ($HOME\.aws\set_env.ps1)
+   New-Item -ItemType Directory -Force -Path "$HOME\.aws"
+   Copy-Item scripts\set_env.ps1 "$HOME\.aws\"
+   . $HOME\.aws\set_env.ps1
+   ```
+
+2. **AWS CLI Configuration** (Alternative approach):
+   ```bash
+   aws configure
+   # AWS credentials will be stored in ~/.aws/credentials
+   ```
+
+3. **.env File** (For project-specific settings):
+   ```bash
    cp .env.template .env
-   
-   # Edit .env with your credentials
-   # Then the application will automatically load them
+   # Edit .env with NON-SENSITIVE environment variables
+   # Do not store AWS credentials here
    ```
 
-3. Verify your credentials are working:
-   ```bash
-   # Run the application
-   python run.py
-   
-   # Make a test request
-   curl http://localhost:5000/api/teas
-   ```
+### Credential File Security
+- Store credential files outside the project directory
+- Use restricted permissions (600 on Unix systems)
+- Never commit credential files to version control
+- Keep different credentials for different projects
+- Location of credential files:
+  - Linux/Mac: `~/.aws/set_env.sh`
+  - Windows: `%USERPROFILE%\.aws\set_env.ps1`
 
-Note: Never commit your actual AWS credentials to version control. The `.env` file and credential scripts are included in `.gitignore`.
+### Production Deployment
+In production (Elastic Beanstalk), the application uses IAM roles instead of explicit credentials:
+
+1. **IAM Instance Profile**:
+   - The application uses `ec2-dynamodb-elasticbeanstalk-instance-profile`
+   - This provides secure, automatic access to AWS services
+   - No need to set AWS credentials manually
+
+2. **Sensitive Data**:
+   If you need to store sensitive data (not AWS credentials):
+   - Use Elastic Beanstalk Environment Properties:
+     1. Go to EB Console → Your Environment
+     2. Configuration → Software
+     3. Environment Properties section
+     4. Add key-value pairs
+   - Values are:
+     - Encrypted at rest
+     - Not visible in logs
+     - Easy to rotate
+
+3. **Security Best Practices**:
+   - Never commit credentials to version control
+   - Don't store credentials in EC2 user data or .bashrc
+   - Use IAM roles and instance profiles
+   - Rotate credentials regularly
+   - Use least-privilege permissions
+
+### Troubleshooting
+If you encounter permission issues:
+1. Check IAM role permissions
+2. Verify instance profile attachment
+3. Check CloudWatch logs for access denied errors
 
 # Virtual Environment and Dependencies
 - Create virtual environment: `python -m venv myenv`
