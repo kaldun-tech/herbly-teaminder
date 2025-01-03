@@ -1,13 +1,27 @@
 # Python
-*.pyc
+*.py[cod]
 __pycache__/
+*.so
+.Python
+*.egg
 *.egg-info/
 
-# JetBrains IDEs (.idea)
+# JetBrains
 .idea/
 *.iml
 *.ipr
 *.iws
+
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
 
 # Virtual Environment
 venv/
@@ -15,4 +29,17 @@ myenv/
 
 # Environment variables
 .env
-scripts/set_env.*
+.env.*
+scripts/set_env.sh
+scripts/set_env.ps1
+scripts/set_env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# AWS
+.aws/

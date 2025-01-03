@@ -16,20 +16,30 @@ For local development, you have three options to set up AWS credentials:
 
 1. **Environment Variables** (Recommended for testing):
    
-   Create credential scripts in your home directory:
+   Copy the template scripts to your home directory:
 
    ```bash
    # Linux/Mac (~/.aws/set_env.sh)
    mkdir -p ~/.aws
-   cp scripts/set_env.sh ~/.aws/
+   cp scripts/templates/aws_credentials.sh.template ~/.aws/set_env.sh
    chmod 600 ~/.aws/set_env.sh  # Restrict permissions
+   
+   # Edit the file with your credentials
+   nano ~/.aws/set_env.sh
+   
+   # Source the file
    source ~/.aws/set_env.sh
    ```
 
    ```powershell
    # Windows ($HOME\.aws\set_env.ps1)
    New-Item -ItemType Directory -Force -Path "$HOME\.aws"
-   Copy-Item scripts\set_env.ps1 "$HOME\.aws\"
+   Copy-Item scripts\templates\aws_credentials.ps1.template "$HOME\.aws\set_env.ps1"
+   
+   # Edit the file with your credentials
+   notepad $HOME\.aws\set_env.ps1
+   
+   # Source the file
    . $HOME\.aws\set_env.ps1
    ```
 
@@ -54,6 +64,9 @@ For local development, you have three options to set up AWS credentials:
 - Location of credential files:
   - Linux/Mac: `~/.aws/set_env.sh`
   - Windows: `%USERPROFILE%\.aws\set_env.ps1`
+- Template files (safe to commit):
+  - `scripts/templates/aws_credentials.sh.template`
+  - `scripts/templates/aws_credentials.ps1.template`
 
 ### Production Deployment
 In production (Elastic Beanstalk), the application uses IAM roles instead of explicit credentials:
