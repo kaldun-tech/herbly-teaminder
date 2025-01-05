@@ -1,2 +1,19 @@
+branch-defaults:
+  main:
+    environment: Herbly-teaminder-env
+environment-defaults:
+  Herbly-teaminder-env:
+    branch: null
+    repository: null
 global:
-  profile: eb-cli
+  application_name: herbly-teaminder
+  default_ec2_keyname: herbly-teaminder
+  default_platform: Python 3.12
+  default_region: us-east-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: 355963188333_AdministratorAccess
+  sc: git
+  workspace_type: Application

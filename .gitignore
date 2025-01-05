@@ -43,3 +43,8 @@ scripts/set_env.*.local
 
 # AWS
 .aws/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
