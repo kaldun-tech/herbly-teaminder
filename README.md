@@ -123,8 +123,15 @@ The application uses Flask-Talisman to implement security headers:
 
 ### AWS Security
 - Uses AWS IAM roles with least privilege principle
-- Credentials are securely stored in GitHub Secrets
+- Implements OIDC (OpenID Connect) for secure, keyless authentication in GitHub Actions
+- No long-term credentials stored in GitHub Secrets
 - No sensitive information in code or configuration files
+
+### GitHub Actions Security
+- Uses OIDC for secure AWS authentication
+- Temporary credentials generated for each workflow run
+- Better audit trail through AWS CloudTrail
+- Follows security best practices for CI/CD
 
 # Virtual Environment and Dependencies
 - Create virtual environment: `python -m venv myenv`
