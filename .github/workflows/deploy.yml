@@ -8,6 +8,11 @@ on:
       - completed
     branches: [ main ]
 
+# Add permissions for OIDC
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Only deploy if tests pass
@@ -16,24 +21,41 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Configure AWS credentials
+    - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}  # IAM role ARN for OIDC
         aws-region: us-east-1
     
     - name: Generate deployment package
       run: |
         zip -r deploy.zip . -x "*.git*" "venv/*" "myenv/*"
     
+    - name: Upload to S3
+      env:
+        APPLICATION_NAME: herbly-teaminder
+        REGION: us-east-1
+      run: |
+        # Create S3 bucket if it doesn't exist
+        aws s3api create-bucket \
+          --bucket ${APPLICATION_NAME}-deploy \
+          --region ${REGION} || true
+        
+        # Upload deployment package
+        aws s3 cp deploy.zip s3://${APPLICATION_NAME}-deploy/
+
     - name: Deploy to EB
-      uses: einaregilsson/beanstalk-deploy@v21
-      with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        application_name: herbly-teaminder
-        environment_name: herbly-teaminder-env
-        region: us-east-1
-        version_label: ${{ github.sha }}
-        deployment_package: deploy.zip
+      env:
+        APPLICATION_NAME: herbly-teaminder
+        ENVIRONMENT_NAME: herbly-teaminder-env
+        REGION: us-east-1
+      run: |
+        aws elasticbeanstalk create-application-version \
+          --application-name $APPLICATION_NAME \
+          --version-label ${{ github.sha }} \
+          --source-bundle S3Bucket=${APPLICATION_NAME}-deploy,S3Key=deploy.zip
+        
+        aws elasticbeanstalk update-environment \
+          --application-name $APPLICATION_NAME \
+          --environment-name $ENVIRONMENT_NAME \
+          --version-label ${{ github.sha }}

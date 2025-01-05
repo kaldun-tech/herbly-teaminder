@@ -101,6 +101,31 @@ If you encounter permission issues:
 2. Verify instance profile attachment
 3. Check CloudWatch logs for access denied errors
 
+## Security Features
+
+### Rate Limiting
+The application implements rate limiting to prevent abuse with both Global limits and Endpoint-specific limits (per IP)
+
+### Security Headers
+The application uses Flask-Talisman to implement security headers:
+
+- Forces HTTPS connections
+- Implements HTTP Strict Transport Security (HSTS)
+- Sets secure session cookies
+- Implements Content Security Policy (CSP)
+- Protects against XSS and CSRF attacks
+
+### Input Validation
+- Strict validation on all input fields
+- Length limits on text fields
+- Type checking for all fields
+- Range validation for numeric values
+
+### AWS Security
+- Uses AWS IAM roles with least privilege principle
+- Credentials are securely stored in GitHub Secrets
+- No sensitive information in code or configuration files
+
 # Virtual Environment and Dependencies
 - Create virtual environment: `python -m venv myenv`
 - Activate on Linux: `source myenv/bin/activate`

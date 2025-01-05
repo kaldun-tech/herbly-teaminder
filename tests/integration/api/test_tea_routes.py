@@ -3,6 +3,8 @@
 from unittest.mock import Mock
 import pytest
 from flask import Flask
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from app.services.tea_service import TeaService
 from app.routes.api.tea_routes import create_tea_routes
 
@@ -36,6 +38,14 @@ def app(mock_tea_service):
         'DYNAMODB_TABLE_NAME': 'test_teas'
     }
     app.config.update(test_config)
+
+    # Initialize limiter with no limits for testing
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=[],  # No default limits
+        storage_uri="memory://"
+    )
 
     # Register blueprint with the mock service
     app.register_blueprint(create_tea_routes(mock_tea_service), url_prefix='/api')
