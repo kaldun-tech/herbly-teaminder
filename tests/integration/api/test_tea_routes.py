@@ -155,18 +155,27 @@ def test_increment_steep(client, mock_tea_dao):
 
 def test_clear_steep(client, mock_tea_dao):
     """Test clearing steep count for a tea"""
-    # Mock initial tea state
-    mock_tea_dao.get_tea_item.return_value = {
+    # Mock initial tea state with nonzero steep count
+    initial_tea = {
         "Name": "Green Tea",
         "Type": "Green",
         "SteepTimeMinutes": 2,
         "SteepTemperatureFahrenheit": 175,
-        "SteepCount": 3
+        "SteepCount": 3  # Start with nonzero steep count
     }
+    cleared_tea = dict(initial_tea)  # Create a copy
+    cleared_tea["SteepCount"] = 0    # Set steep count to 0
+    
+    mock_tea_dao.get_tea_item.return_value = initial_tea
+    mock_tea_dao.clear_steep_count.return_value = cleared_tea
 
-    response = client.post('/api/teas/Green Tea/clear')
+    response = client.delete('/api/teas/Green Tea/steep')
     assert response.status_code == 200
     mock_tea_dao.clear_steep_count.assert_called_once_with("Green Tea")
+    
+    # Verify the response shows steep count was cleared
+    response_data = response.get_json()
+    assert response_data["SteepCount"] == 0
 
 def test_create_tea_with_defaults(client, mock_tea_dao):
     """Test creating a tea with minimal data"""
