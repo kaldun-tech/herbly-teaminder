@@ -1,22 +1,24 @@
-# Runs the TeaMinder App
+"""Flask application factory module"""
 import os
 from flask import Flask, jsonify
 from flask_talisman import Talisman
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from app.config.default import Config as app_config
+from app.config import Config
 from app.routes.api.tea_routes import create_tea_routes
 from app.routes.pages import create_page_routes
 from app.routes.auth import bp as auth_bp
 
-"""Flask application factory"""
 def create_app(config=None):
     """Create and configure the Flask application"""
     app = Flask(__name__)
-    app.template_folder = os.path.join(os.path.dirname(__file__), 'templates/html_templates')
+    app.template_folder = os.path.join(os.path.dirname(__file__), 'templates')
+    app.static_folder = os.path.join(os.path.dirname(__file__), 'static')
 
     # Load default configuration
-    app.config.from_object(app_config)
+    if config is None:
+        config = Config()
+    app.config.from_object(config)
 
     # Load environment specific configuration
     if 'FLASK_CONFIG' in os.environ:
@@ -28,10 +30,28 @@ def create_app(config=None):
     # Initialize security headers except during testing
     if not app.config.get('TESTING', False):
         # Apply security headers to prevent common vulnerabilities
+        csp = {
+            'default-src': ['\'self\''],
+            'script-src': [
+                '\'self\'',
+                '\'unsafe-inline\'',
+                'cdn.jsdelivr.net'
+            ],
+            'style-src': [
+                '\'self\'',
+                '\'unsafe-inline\'',
+                'cdn.jsdelivr.net'
+            ],
+            'font-src': [
+                '\'self\'',
+                'cdn.jsdelivr.net'
+            ]
+        }
         Talisman(app,
                 force_https=app.config.get('FORCE_HTTPS', True),
                 strict_transport_security=True,
-                session_cookie_secure=True)
+                session_cookie_secure=True,
+                content_security_policy=csp)
 
         # Initialize rate limiter with reasonable defaults
         Limiter(

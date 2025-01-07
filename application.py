@@ -1,13 +1,7 @@
-import logging
+"""AWS Elastic Beanstalk application entry point"""
 from app.app import create_app
 
-# Set up logging
-logging.basicConfig(
-    filename='/var/log/flask/application.log',
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s: %(message)s'
-)
-
+# Create the Flask application
 application = create_app()
 
 # Health check endpoint
