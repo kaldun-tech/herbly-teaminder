@@ -59,7 +59,7 @@ jobs:
         import flask, werkzeug, boto3
         assert flask.__version__ == '2.0.1', f'Wrong Flask version: {flask.__version__}'
         assert werkzeug.__version__ == '2.0.3', f'Wrong Werkzeug version: {werkzeug.__version__}'
-        assert boto3.__version__ == '1.26.137', f'Wrong boto3 version: {boto3.__version__}'
+        assert boto3.__version__ == '1.35.0', f'Wrong boto3 version: {boto3.__version__}'
         print('All dependency versions verified!')
         "
         
