@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', function() {
         saveButton.addEventListener('click', addTea);
     }
 
+    // Setup tea type change handler
+    const teaTypeSelect = document.getElementById('teaType');
+    if (teaTypeSelect) {
+        teaTypeSelect.addEventListener('change', function() {
+            updateDefaultValues(this.value);
+        });
+    }
+
     // Setup timer handlers
     const startButton = document.getElementById('start-timer');
     const resetButton = document.getElementById('reset-timer');
@@ -26,6 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function updateDefaultValues(teaType) {
+    fetch('/api/defaults')
+        .then(response => response.json())
+        .then(defaults => {
+            if (teaType in defaults) {
+                const values = defaults[teaType];
+                document.getElementById('steep-temperature').value = values.temperature;
+                document.getElementById('steep-time').value = values.steep_time;
+            }
+        })
+        .catch(error => console.error('Error loading defaults:', error));
+}
 
 function loadTeas() {
     fetch('/api/teas')
