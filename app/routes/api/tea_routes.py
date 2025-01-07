@@ -1,7 +1,5 @@
 """Routes for Teas"""
 from flask import Blueprint, jsonify, request, current_app
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from app.services.tea_service import TeaService
 from app.dao.tea_dao import TeaDao
 from app.config.tea_defaults import TEA_DEFAULTS
@@ -10,8 +8,6 @@ def create_tea_routes(tea_service=None):
     """Factory function to create tea routes blueprint with optional service injection"""
     tea_routes = Blueprint('tea_routes', __name__)
     
-    limiter = Limiter(key_func=get_remote_address, app=tea_routes)
-
     def get_service():
         if tea_service is not None:
             return tea_service
@@ -33,7 +29,6 @@ def create_tea_routes(tea_service=None):
             return None, (jsonify({'error': 'Tea not found'}), 404)
 
     @tea_routes.route('/teas', methods=['GET'])
-    @limiter.limit("5/minute")
     def get_teas():
         """Get all teas"""
         try:
@@ -43,7 +38,6 @@ def create_tea_routes(tea_service=None):
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/teas/<name>', methods=['GET'])
-    @limiter.limit("30/minute")
     def get_tea(name):
         """Get a tea by name"""
         tea, error = get_tea_or_404(name)
@@ -52,7 +46,6 @@ def create_tea_routes(tea_service=None):
         return jsonify(tea), 200
 
     @tea_routes.route('/teas', methods=['POST'])
-    @limiter.limit("5/minute")
     def create_tea():
         """Create a new tea"""
         try:
@@ -87,7 +80,6 @@ def create_tea_routes(tea_service=None):
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/teas/<name>', methods=['PUT'])
-    @limiter.limit("5/minute")
     def update_tea(name):
         """Update a tea"""
         data = request.get_json()
@@ -101,7 +93,6 @@ def create_tea_routes(tea_service=None):
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/teas/<name>', methods=['DELETE'])
-    @limiter.limit("5/minute")
     def delete_tea(name):
         """Delete a tea"""
         try:
@@ -113,7 +104,6 @@ def create_tea_routes(tea_service=None):
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/teas/<name>/steep', methods=['POST'])
-    @limiter.limit("5/minute")
     def increment_steep_count(name):
         """Increment steep count for a tea"""
         try:
@@ -126,7 +116,6 @@ def create_tea_routes(tea_service=None):
             return jsonify({'error': str(e)}), 500
 
     @tea_routes.route('/teas/<name>/clear', methods=['POST'])
-    @limiter.limit("5/minute")
     def clear_steep_count(name):
         """Clear steep count for a tea"""
         try:
