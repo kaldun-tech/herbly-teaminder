@@ -7,7 +7,7 @@ from app.config.tea_defaults import TEA_DEFAULTS
 def create_tea_routes(tea_service=None):
     """Factory function to create tea routes blueprint with optional service injection"""
     tea_routes = Blueprint('tea_routes', __name__)
-    
+
     def get_service():
         if tea_service is not None:
             return tea_service
