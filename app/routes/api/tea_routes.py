@@ -1,21 +1,14 @@
 """Routes for Teas"""
 from functools import wraps
 from flask import Blueprint, jsonify, request, current_app
-from app.services.tea_service import TeaService
-from app.dao.memory_tea_dao import MemoryTeaDao
-from json.decoder import JSONDecodeError
+from flask_login import login_required, current_user
+from app.extensions import db
+from app.models.tea import Tea
+from datetime import datetime
 
-# Create a single instance of the DAO to be shared across requests
-tea_dao = MemoryTeaDao()
-
-def create_tea_routes(tea_service=None):
-    """Factory function to create tea routes blueprint with optional service injection"""
+def create_tea_routes():
+    """Factory function to create tea routes blueprint"""
     tea_routes = Blueprint('tea_routes', __name__)
-
-    def get_service():
-        if tea_service is not None:
-            return tea_service
-        return TeaService(tea_dao)
 
     def handle_tea_errors(f):
         """Decorator to handle common tea-related errors"""
@@ -26,9 +19,6 @@ def create_tea_routes(tea_service=None):
             except JSONDecodeError:
                 return jsonify({'error': 'Invalid JSON format'}), 400
             except KeyError as e:
-                # Check if this is a tea not found error
-                if len(args) > 0 and str(e) == f"'{args[0]}'":
-                    return jsonify({'error': 'Tea not found'}), 404
                 return jsonify({'error': f'Missing required field: {str(e)}'}), 400
             except ValueError as e:
                 return jsonify({'error': str(e)}), 400
@@ -41,71 +31,115 @@ def create_tea_routes(tea_service=None):
             raise JSONDecodeError('Invalid JSON data', '', 0)
         return data
 
-    def get_tea_or_404(name):
+    def get_tea_or_404(tea_id):
         """Helper function to get a tea or return 404 response"""
-        try:
-            tea = get_service().get_tea_item(name)
-            return tea, None
-        except KeyError:
+        tea = Tea.query.filter_by(id=tea_id, user_id=current_user.id).first()
+        if not tea:
             return None, (jsonify({'error': 'Tea not found'}), 404)
+        return tea, None
 
-    @tea_routes.route('/teas', methods=['GET'])
-    @handle_tea_errors
+    @tea_routes.route('/api/teas', methods=['GET'])
+    @login_required
     def get_teas():
-        """Get all teas"""
-        teas = get_service().get_all_tea_items()
-        return jsonify(teas), 200
+        """Get all teas for the current user"""
+        teas = Tea.query.filter_by(user_id=current_user.id).all()
+        return jsonify([tea.to_dict() for tea in teas])
 
-    @tea_routes.route('/teas/<name>', methods=['GET'])
-    @handle_tea_errors
-    def get_tea(name):
-        """Get a tea by name"""
-        tea, error = get_tea_or_404(name)
-        if error:
-            return error
-        return jsonify(tea), 200
-
-    @tea_routes.route('/teas', methods=['POST'])
+    @tea_routes.route('/api/teas', methods=['POST'])
+    @login_required
     @handle_tea_errors
     def create_tea():
         """Create a new tea"""
-        tea_item = validate_json()
-        created_tea = get_service().create_tea_item(tea_item)
-        return jsonify(created_tea), 201
+        data = validate_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'type', 'steep_time', 'steep_temperature']
+        for field in required_fields:
+            if field not in data:
+                raise KeyError(field)
 
-    @tea_routes.route('/teas/<name>', methods=['PUT'])
+        # Check if tea with same name already exists for this user
+        existing_tea = Tea.query.filter_by(name=data['name'], user_id=current_user.id).first()
+        if existing_tea:
+            return jsonify({'error': 'Tea with this name already exists'}), 400
+
+        tea = Tea(
+            name=data['name'],
+            type=data['type'],
+            steep_time=data['steep_time'],
+            steep_temperature=data['steep_temperature'],
+            notes=data.get('notes'),
+            user_id=current_user.id
+        )
+        
+        db.session.add(tea)
+        db.session.commit()
+        
+        return jsonify(tea.to_dict()), 201
+
+    @tea_routes.route('/api/teas/<int:tea_id>', methods=['GET'])
+    @login_required
+    def get_tea(tea_id):
+        """Get a specific tea"""
+        tea, error = get_tea_or_404(tea_id)
+        if error:
+            return error
+        return jsonify(tea.to_dict())
+
+    @tea_routes.route('/api/teas/<int:tea_id>', methods=['PUT'])
+    @login_required
     @handle_tea_errors
-    def update_tea(name):
+    def update_tea(tea_id):
         """Update a tea"""
-        tea_item = validate_json()
-        updated_tea = get_service().update_tea_item(name, tea_item)
-        return jsonify(updated_tea), 200
+        tea, error = get_tea_or_404(tea_id)
+        if error:
+            return error
 
-    @tea_routes.route('/teas/<name>/steep', methods=['POST'])
-    @handle_tea_errors
-    def steep_tea(name):
-        """Increment steep count"""
-        tea = get_service().increment_steep_count(name)
-        return jsonify(tea), 200
+        data = validate_json()
+        
+        # Update fields if present in request
+        updatable_fields = ['name', 'type', 'steep_time', 'steep_temperature', 'notes']
+        for field in updatable_fields:
+            if field in data:
+                setattr(tea, field, data[field])
+        
+        db.session.commit()
+        return jsonify(tea.to_dict())
 
-    @tea_routes.route('/teas/<name>/steep', methods=['DELETE'])
-    @handle_tea_errors
-    def clear_steep(name):
-        """Clear steep count"""
-        tea = get_service().clear_steep_count(name)
-        return jsonify(tea), 200
-
-    @tea_routes.route('/teas/<name>', methods=['DELETE'])
-    @handle_tea_errors
-    def delete_tea(name):
+    @tea_routes.route('/api/teas/<int:tea_id>', methods=['DELETE'])
+    @login_required
+    def delete_tea(tea_id):
         """Delete a tea"""
-        get_service().delete_tea_item(name)
+        tea, error = get_tea_or_404(tea_id)
+        if error:
+            return error
+
+        db.session.delete(tea)
+        db.session.commit()
         return '', 204
 
-    @tea_routes.route('/defaults', methods=['GET'])
-    def get_defaults():
-        """Get default values for different tea types"""
-        from app.config.tea_defaults import TEA_DEFAULTS
-        return jsonify(TEA_DEFAULTS)
+    @tea_routes.route('/api/teas/<int:tea_id>/steep', methods=['POST'])
+    @login_required
+    def increment_steep_count(tea_id):
+        """Increment the steep count for a tea"""
+        tea, error = get_tea_or_404(tea_id)
+        if error:
+            return error
+
+        tea.steep_count += 1
+        db.session.commit()
+        return jsonify(tea.to_dict())
+
+    @tea_routes.route('/api/teas/<int:tea_id>/steep', methods=['DELETE'])
+    @login_required
+    def clear_steep_count(tea_id):
+        """Reset the steep count for a tea to 0"""
+        tea, error = get_tea_or_404(tea_id)
+        if error:
+            return error
+
+        tea.steep_count = 0
+        db.session.commit()
+        return jsonify(tea.to_dict())
 
     return tea_routes

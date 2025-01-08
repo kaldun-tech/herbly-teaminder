@@ -8,6 +8,7 @@ from app.config import Config
 from app.routes.api.tea_routes import create_tea_routes
 from app.routes.pages import create_page_routes
 from app.routes.auth import bp as auth_bp
+from app.extensions import db, login_manager, migrate
 
 def create_app(config=None):
     """Create and configure the Flask application"""
@@ -26,6 +27,17 @@ def create_app(config=None):
 
     if config:
         app.config.update(config)
+
+    # Set PostgreSQL database URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 
+        'postgresql://postgres:postgres@localhost:5432/teaminder')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-please-change')
+
+    # Initialize extensions
+    db.init_app(app)
+    login_manager.init_app(app)
+    migrate.init_app(app, db)
 
     # Initialize security headers except during testing
     if not app.config.get('TESTING', False):
@@ -79,6 +91,9 @@ def create_app(config=None):
 
     # Register blueprints
     with app.app_context():
+        # Create database tables
+        db.create_all()
+        
         tea_bp = create_tea_routes()
         app.register_blueprint(tea_bp, url_prefix='/api')
         app.register_blueprint(create_page_routes())

@@ -1,54 +1,37 @@
-"""Defines the Tea class"""
+"""Tea model for PostgreSQL"""
+from datetime import datetime
+from app.extensions import db
 
-class Tea:
-    # pylint: disable=too-many-arguments
-    def __init__(self, name, tea_type, steep_time_minutes = 0, steep_temperature_fahrenheit = 0, steep_count = 0):
-        if not name:
-            raise ValueError("Name cannot be empty")
-        if not tea_type:
-            raise ValueError("Tea type cannot be empty")
-        self.name = name
-        self.tea_type = tea_type
-        self.steep_time_minutes = steep_time_minutes
-        self.steep_temperature_fahrenheit = steep_temperature_fahrenheit
-        self.steep_count = steep_count
+class Tea(db.Model):
+    """Tea model"""
+    __tablename__ = 'teas'
 
-    def __eq__(self, other):
-        if not isinstance(other, Tea):
-            return False
-        return (
-            self.name == other.name and
-            self.tea_type == other.tea_type and
-            self.steep_time_minutes == other.steep_time_minutes and
-            self.steep_temperature_fahrenheit == other.steep_temperature_fahrenheit and
-            self.steep_count == other.steep_count
-        )
-
-    def __repr__(self):
-        return (f'Tea(name="{self.name}", tea_type="{self.tea_type}", steep_time_minutes={self.steep_time_minutes},'
-                f' steep_temperature_fahrenheit={self.steep_temperature_fahrenheit}, steep_count={self.steep_count})')
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    steep_time = db.Column(db.Integer, nullable=False)  # in seconds
+    steep_temperature = db.Column(db.Integer, nullable=False)  # in celsius
+    steep_count = db.Column(db.Integer, default=0)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Foreign key to user
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def to_dict(self):
+        """Convert tea to dictionary"""
         return {
-            'Name': self.name,
-            'Type': self.tea_type,
-            'SteepTimeMinutes': self.steep_time_minutes,
-            'SteepTemperatureFahrenheit': self.steep_temperature_fahrenheit,
-            'SteepCount': self.steep_count
+            'id': self.id,
+            'name': self.name,
+            'type': self.type,
+            'steep_time': self.steep_time,
+            'steep_temperature': self.steep_temperature,
+            'steep_count': self.steep_count,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }
 
-    @staticmethod
-    def from_dict(tea_dict):
-        if not tea_dict:
-            raise ValueError("Tea dictionary cannot be empty")
-        if not tea_dict.get("Name"):
-            raise ValueError("Name cannot be empty")
-        if not tea_dict.get("Type"):
-            raise ValueError("Type cannot be empty")
-        return Tea(
-            tea_dict.get('Name'),
-            tea_dict.get('Type'),
-            tea_dict.get('SteepTimeMinutes', 0),
-            tea_dict.get('SteepTemperatureFahrenheit', 0),
-            tea_dict.get('SteepCount', 0),
-        )
+    def __repr__(self):
+        return f'<Tea {self.name}>'
