@@ -12,5 +12,5 @@ class Config:
     API_KEY = os.environ.get('API_KEY', 'dummy_api_key')
     API_SECRET = os.environ.get('API_SECRET', 'dummy_api_secret')
 
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'development_secret_key')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-CHANGE-IN-PRODUCTION')
     ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', 'development_encryption_key')

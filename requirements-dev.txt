@@ -1,1 +1,2 @@
 awsebcli==3.21.0
+flask-testing

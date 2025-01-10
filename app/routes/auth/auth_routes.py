@@ -1,141 +1,83 @@
-"""Authentication routes for the application"""
-from flask import Blueprint, jsonify, request
+"""Authentication routes"""
+from flask import Blueprint, request, jsonify, url_for, redirect, flash, render_template
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash
-from app.models.user import User
+from werkzeug.urls import url_parse
 from app.extensions import db
+from app.models.user import User
 
 def create_auth_routes():
-    """Factory function to create authentication routes blueprint"""
-    auth_routes = Blueprint('auth_routes', __name__)
+    """Create authentication routes blueprint"""
+    bp = Blueprint('auth', __name__)
 
-    @auth_routes.route('/auth/register', methods=['POST'])
+    @bp.route('/register', methods=['POST'])
     def register():
         """Register a new user"""
         data = request.get_json()
-
-        # Validate required fields
-        required_fields = ['username', 'email', 'password']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-
-        # Check if username already exists
+        
+        # Validate input
+        if not data or not data.get('username') or not data.get('email') or not data.get('password'):
+            return jsonify({'error': 'Missing required fields'}), 400
+            
+        # Check if user exists
         if User.query.filter_by(username=data['username']).first():
             return jsonify({'error': 'Username already exists'}), 400
-
-        # Check if email already exists
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'Email already exists'}), 400
-
-        # Create new user
-        user = User(
-            username=data['username'],
-            email=data['email']
-        )
+            
+        # Create user
+        user = User(username=data['username'], email=data['email'])
         user.set_password(data['password'])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return jsonify({'message': 'User registered successfully'}), 201
 
-        try:
-            db.session.add(user)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': str(e)}), 500
-
-        return jsonify({
-            'message': 'User created successfully',
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email
-            }
-        }), 201
-
-    @auth_routes.route('/auth/login', methods=['POST'])
+    @bp.route('/login', methods=['POST'])
     def login():
-        """Login a user"""
+        """Log in a user"""
+        if current_user.is_authenticated:
+            return jsonify({'message': 'Already logged in'}), 400
+            
         data = request.get_json()
-
-        # Validate required fields
-        required_fields = ['username', 'password']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-
-        # Find user by username
+        
+        # Validate input
+        if not data or not data.get('username') or not data.get('password'):
+            return jsonify({'error': 'Missing required fields'}), 400
+            
+        # Check credentials
         user = User.query.filter_by(username=data['username']).first()
-        if not user or not user.check_password(data['password']):
+        if user is None or not user.check_password(data['password']):
             return jsonify({'error': 'Invalid username or password'}), 401
-
-        # Login user
-        login_user(user)
-
+            
+        # Log in user
+        login_user(user, remember=data.get('remember_me', False))
+        
+        # Handle next page
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('main.index')
+            
         return jsonify({
-            'message': 'Login successful',
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email
-            }
-        })
+            'message': 'Logged in successfully',
+            'next': next_page
+        }), 200
 
-    @auth_routes.route('/auth/logout', methods=['POST'])
+    @bp.route('/logout')
     @login_required
     def logout():
-        """Logout the current user"""
+        """Log out the current user"""
         logout_user()
-        return jsonify({'message': 'Logout successful'})
+        return jsonify({'message': 'Logged out successfully'}), 200
 
-    @auth_routes.route('/auth/me', methods=['GET'])
+    @bp.route('/profile')
     @login_required
-    def get_current_user():
-        """Get the current user's information"""
+    def profile():
+        """Get current user profile"""
         return jsonify({
-            'user': {
-                'id': current_user.id,
-                'username': current_user.username,
-                'email': current_user.email
-            }
-        })
+            'username': current_user.username,
+            'email': current_user.email,
+            'created_at': current_user.created_at.isoformat()
+        }), 200
 
-    @auth_routes.route('/auth/me', methods=['PUT'])
-    @login_required
-    def update_current_user():
-        """Update the current user's information"""
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
-
-        if 'username' in data:
-            # Check if new username is already taken
-            existing_user = User.query.filter_by(username=data['username']).first()
-            if existing_user and existing_user.id != current_user.id:
-                return jsonify({'error': 'Username already exists'}), 400
-            current_user.username = data['username']
-
-        if 'email' in data:
-            # Check if new email is already taken
-            existing_user = User.query.filter_by(email=data['email']).first()
-            if existing_user and existing_user.id != current_user.id:
-                return jsonify({'error': 'Email already exists'}), 400
-            current_user.email = data['email']
-
-        if 'password' in data:
-            current_user.set_password(data['password'])
-
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': str(e)}), 500
-
-        return jsonify({
-            'message': 'User updated successfully',
-            'user': {
-                'id': current_user.id,
-                'username': current_user.username,
-                'email': current_user.email
-            }
-        })
-
-    return auth_routes
+    return bp

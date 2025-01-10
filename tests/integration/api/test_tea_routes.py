@@ -15,7 +15,7 @@ def app():
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
         'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-        'SECRET_KEY': 'test_secret_key'
+        'SECRET_KEY': 'TEST-secret-key-NOT-FOR-PRODUCTION'
     })
     
     # Initialize extensions

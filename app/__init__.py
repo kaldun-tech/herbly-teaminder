@@ -1,47 +1,55 @@
-"""Flask application factory"""
+"""Initialize Flask app"""
 from flask import Flask
-from flask_login import LoginManager
-from flask_migrate import Migrate
-from app.extensions import db
-from app.cli import register_commands
+from app.extensions import db, migrate, login_manager
 
 def create_app(config_object=None):
     """Create Flask application."""
     app = Flask(__name__)
 
-    # Load config
+    # Load the default configuration
     if config_object is None:
-        # Default to development config
-        from config import DevelopmentConfig
-        config_object = DevelopmentConfig
-    
-    app.config.from_object(config_object)
+        app.config.from_object('config.DevelopmentConfig')
+    else:
+        app.config.from_object(config_object)
+
+    # Set database URI if not already set
+    if 'SQLALCHEMY_DATABASE_URI' not in app.config:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/dev.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize extensions
     db.init_app(app)
-    migrate = Migrate()
     migrate.init_app(app, db)
-    
-    # Initialize LoginManager
-    login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = 'auth_routes.login'
+    
+    # Import models after db is initialized to avoid circular imports
+    from app.models.user import User
+    from app.models.tea import Tea
+    
+    # Register blueprints
+    from app.routes.auth.auth_routes import create_auth_routes
+    from app.routes.api.tea_routes import create_tea_routes
+    from app.routes.pages import create_page_routes
+    
+    auth_bp = create_auth_routes()
+    tea_bp = create_tea_routes()
+    page_bp = create_page_routes()
+    
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(tea_bp)
+    app.register_blueprint(page_bp)
 
+    # User loader callback
     @login_manager.user_loader
     def load_user(user_id):
-        from app.models.user import User
         return User.query.get(int(user_id))
 
     # Register CLI commands
+    from app.cli import register_commands
     register_commands(app)
 
     with app.app_context():
-        # Import routes
-        from app.routes.api.tea_routes import create_tea_routes
-        from app.routes.auth.auth_routes import create_auth_routes
+        # Create all tables
+        db.create_all()
 
-        # Register blueprints
-        app.register_blueprint(create_tea_routes())
-        app.register_blueprint(create_auth_routes())
-
-        return app
+    return app
