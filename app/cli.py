@@ -1,6 +1,7 @@
 """CLI commands for the application"""
 import click
 from flask.cli import with_appcontext
+import sqlalchemy.exc
 from app.extensions import db
 from app.security.key_management import (
     rotate_secret_key, get_days_until_rotation,
@@ -22,8 +23,8 @@ def reset_db_command():
         return
 
     # Import all models to ensure they're registered with SQLAlchemy
-    from app.models.user import User  # pylint: disable=import-outside-toplevel
-    from app.models.tea import Tea    # pylint: disable=import-outside-toplevel
+    from app.models.user import User  # pylint: disable=import-outside-toplevel unused-import
+    from app.models.tea import Tea    # pylint: disable=import-outside-toplevel unused-import
 
     click.echo('Dropping all tables...')
     db.drop_all()
@@ -63,8 +64,11 @@ def create_admin_command(username, email, password):
         db.session.add(admin)
         db.session.commit()
         click.echo(f'Successfully created admin user: {username}')
-    except Exception as e:
-        click.echo(f'Error creating admin user: {e}')
+    except sqlalchemy.exc.IntegrityError:
+        click.echo('Error: Database integrity error (duplicate username or email)')
+        db.session.rollback()
+    except sqlalchemy.exc.SQLAlchemyError as e:
+        click.echo(f'Database error creating admin user: {e}')
         db.session.rollback()
 
 @click.command('rotate-key')

@@ -64,7 +64,7 @@ FLASK_APP=app:create_app
 DATABASE_URL=sqlite:///dev.db
 SECRET_KEY=dev-secret-key-CHANGE-IN-PRODUCTION
 """
-        with open(".env", "w") as f:
+        with open(".env", "w", encoding='utf-8') as f:
             f.write(env_content)
         print("✓ Created .env file")
 

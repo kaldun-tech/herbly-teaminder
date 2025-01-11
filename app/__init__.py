@@ -62,7 +62,7 @@ def create_app(config=None):
     login_manager.init_app(app)
 
     # Import and register models
-    User, _ = register_models()  
+    User, _ = register_models()
 
     # Register all blueprints
     register_blueprints(app)
