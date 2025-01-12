@@ -7,7 +7,12 @@ def get_test_config():
     """Get test configuration."""
     return {
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+        'SECRET_KEY': 'test-secret-key-NOT-FOR-PRODUCTION',
+        'WTF_CSRF_ENABLED': False,  # Disable CSRF for testing
+        'LOGIN_DISABLED': False,  # Enable login for testing
+        'PRESERVE_CONTEXT_ON_EXCEPTION': False
     }
 
 @pytest.fixture
@@ -28,4 +33,5 @@ def test_db(test_app):  # pylint: disable=redefined-outer-name
     with test_app.app_context():
         db.create_all()
         yield db
+        db.session.remove()
         db.drop_all()

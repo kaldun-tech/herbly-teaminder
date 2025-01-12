@@ -49,6 +49,9 @@ def auth_client(client, app):
         user.set_password('password123')
         db.session.add(user)
         db.session.commit()
+        
+        # Get fresh user instance from database
+        user = db.session.get(User, user.id)
 
         # Log in
         client.post('/auth/login', json={
@@ -56,23 +59,26 @@ def auth_client(client, app):
             'password': 'password123'
         })
 
-        return client, user
+        yield client, user
 
 @pytest.fixture
 def sample_tea(auth_client):
     """Create a sample tea for testing"""
     client, user = auth_client
-    tea = Tea(
-        name='Test Green Tea',
-        type='green',
-        steep_time=180,
-        steep_temperature=80,
-        notes='Test notes',
-        user_id=user.id
-    )
-    db.session.add(tea)
-    db.session.commit()
-    return tea
+    with client.application.app_context():
+        tea = Tea(
+            name='Test Green Tea',
+            type='green',
+            steep_time=180,
+            steep_temperature=80,
+            notes='Test notes',
+            user_id=user.id
+        )
+        db.session.add(tea)
+        db.session.commit()
+        # Get fresh tea instance from database
+        tea = db.session.get(Tea, tea.id)
+        return tea
 
 def test_get_teas_unauthorized(client):
     """Test that unauthorized users cannot access teas"""

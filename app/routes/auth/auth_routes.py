@@ -1,5 +1,5 @@
 """Authentication routes"""
-from flask import Blueprint, request, jsonify, url_for, redirect, flash, render_template
+from flask import Blueprint, request, jsonify, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.urls import url_parse
 from app.extensions import db
@@ -56,14 +56,14 @@ def create_auth_routes():
         # Handle next page
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('main.index')
+            next_page = url_for('pages.index')
             
         return jsonify({
             'message': 'Logged in successfully',
             'next': next_page
         }), 200
 
-    @bp.route('/logout')
+    @bp.route('/logout', methods=['POST'])
     @login_required
     def logout():
         """Log out the current user"""

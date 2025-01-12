@@ -1,7 +1,7 @@
 """Initialize Flask app"""
 import os
 import logging
-from flask import Flask
+from flask import Flask, jsonify
 from app.extensions import db, migrate, login_manager
 from app.security.key_management import validate_secret_key, KeyValidationError
 
@@ -15,10 +15,10 @@ def register_blueprints(app):
     """Register all blueprints"""
     from app.routes.auth.auth_routes import create_auth_routes  # pylint: disable=import-outside-toplevel
     from app.routes.api.tea_routes import create_tea_routes    # pylint: disable=import-outside-toplevel
-    from app.routes.pages import create_page_routes           # pylint: disable=import-outside-toplevel
+    from app.routes.pages import create_pages_routes           # pylint: disable=import-outside-toplevel
     auth_bp = create_auth_routes()
     tea_bp = create_tea_routes()
-    page_bp = create_page_routes()
+    page_bp = create_pages_routes()
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(tea_bp)
     app.register_blueprint(page_bp)
@@ -35,10 +35,14 @@ def create_app(config=None):
     elif config == 'production':
         env = 'production'
 
-    # Load the appropriate configuration
+    # Load configuration
     if config is None:
         config = os.environ.get('FLASK_CONFIG', 'default')
-    app.config.from_object(f'config.{config.capitalize()}Config')
+        app.config.from_object(f'config.{config.capitalize()}Config')
+    elif isinstance(config, dict):
+        app.config.update(config)
+    else:
+        app.config.from_object(f'config.{config.capitalize()}Config')
 
     # Validate secret key
     secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-CHANGE-IN-PRODUCTION')
@@ -59,10 +63,24 @@ def create_app(config=None):
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    
+    # Initialize login manager
     login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message_category = 'info'
+
+    # Configure unauthorized handler for API routes
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify({'error': 'Unauthorized'}), 401
 
     # Import and register models
     User, _ = register_models()
+
+    # User loader callback
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     # Register all blueprints
     register_blueprints(app)
@@ -71,11 +89,6 @@ def create_app(config=None):
     @app.route('/health')
     def health_check():
         return {'status': 'healthy'}, 200
-
-    # User loader callback
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
 
     # Register CLI commands
     from app.cli import register_commands  # pylint: disable=import-outside-toplevel

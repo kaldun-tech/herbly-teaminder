@@ -1,50 +1,61 @@
+"""Tests for TeaDao"""
 import os
 import pytest
-import boto3
-from moto import mock_aws
+from moto import mock_dynamodb
 from app.dao.tea_dao import TeaDao
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function", autouse=True)
 def aws_credentials():
     """Mocked AWS Credentials for moto."""
     os.environ["AWS_ACCESS_KEY_ID"] = "testing"
     os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
     os.environ["AWS_SECURITY_TOKEN"] = "testing"
     os.environ["AWS_SESSION_TOKEN"] = "testing"
-    os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
+    yield
+    os.environ.pop("AWS_ACCESS_KEY_ID", None)
+    os.environ.pop("AWS_SECRET_ACCESS_KEY", None)
+    os.environ.pop("AWS_DEFAULT_REGION", None)
+    os.environ.pop("AWS_SECURITY_TOKEN", None)
+    os.environ.pop("AWS_SESSION_TOKEN", None)
 
-# pylint: disable=redefined-outer-name disable=unused-argument
-@pytest.fixture(scope="session")
-def dynamodb(aws_credentials):
-    """Return a mocked DynamoDB resource."""
-    with mock_aws():
-        yield boto3.resource('dynamodb', region_name=os.environ["AWS_DEFAULT_REGION"])
+@pytest.fixture(scope="function")
+def dynamodb():
+    """Create a mock DynamoDB resource."""
+    with mock_dynamodb():
+        import boto3
+        yield boto3.resource("dynamodb", region_name="us-east-1")
 
-# pylint: disable=redefined-outer-name disable=unused-argument
 @pytest.fixture(scope="function")
 def tea_table_setup(dynamodb):
-    """Create the DynamoDB table for testing"""
+    """Create the DynamoDB table for testing."""
     table = dynamodb.create_table(
-        TableName='mock_tea_table',
-        KeySchema=[{'AttributeName': 'Name', 'KeyType': 'HASH'}],
-        AttributeDefinitions=[{'AttributeName': 'Name', 'AttributeType': 'S'}],
-        ProvisionedThroughput={'ReadCapacityUnits': 5, 'WriteCapacityUnits': 5}
+        TableName="Tea",
+        KeySchema=[
+            {"AttributeName": "user_id", "KeyType": "HASH"},
+            {"AttributeName": "tea_id", "KeyType": "RANGE"}
+        ],
+        AttributeDefinitions=[
+            {"AttributeName": "user_id", "AttributeType": "S"},
+            {"AttributeName": "tea_id", "AttributeType": "S"}
+        ],
+        BillingMode="PAY_PER_REQUEST"
     )
-    table.meta.client.get_waiter('table_exists').wait(TableName='mock_tea_table')
+    table.meta.client.get_waiter("table_exists").wait(TableName="Tea")
     yield table
     table.delete()
 
 @pytest.fixture(scope="function")
 def tea_table(tea_table_setup):
-    """Return TeaDao instance with mocked table"""
-    return TeaDao('us-east-1', 'mock_tea_table')
+    """Return TeaDao instance with mocked table."""
+    return TeaDao()
 
 @pytest.mark.usefixtures("aws_credentials")
 class TestTeaDao:
     def test_get_table(self, tea_table):
         table = tea_table.get_table()
         assert table is not None
-        assert table.name == 'mock_tea_table'
+        assert table.name == 'Tea'
 
     def test_get_all_tea_items(self, tea_table):
         result = tea_table.get_all_tea_items()

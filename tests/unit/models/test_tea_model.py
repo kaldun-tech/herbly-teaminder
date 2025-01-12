@@ -1,105 +1,79 @@
+"""Tests for Tea model"""
 import pytest
+from datetime import datetime
 from app.models.tea import Tea
+from app.extensions import db
 
 class TestTeaModel:
-    def test_init(self):
-        tea = Tea("Earl Grey", "Black")
-        assert tea.name == "Earl Grey"
-        assert tea.tea_type == "Black"
-        assert tea.steep_time_minutes == 0
-        assert tea.steep_temperature_fahrenheit == 0
-        assert tea.steep_count == 0
+    """Test cases for Tea model"""
+    
+    def test_init(self, app):
+        """Test basic tea initialization"""
+        with app.app_context():
+            tea = Tea(
+                name="Earl Grey",
+                type="Black",
+                steep_time=180,  # 3 minutes in seconds
+                steep_temperature=95,  # celsius
+                notes="Test notes",
+                user_id=1
+            )
+            assert tea.name == "Earl Grey"
+            assert tea.type == "Black"
+            assert tea.steep_time == 180
+            assert tea.steep_temperature == 95
+            assert tea.steep_count == 0
+            assert tea.notes == "Test notes"
+            assert tea.user_id == 1
+            assert isinstance(tea.created_at, datetime)
+            assert isinstance(tea.updated_at, datetime)
 
-    def test_init_with_steep_time(self):
-        tea = Tea("Earl Grey", "Black", steep_time_minutes=3)
-        assert tea.name == "Earl Grey"
-        assert tea.tea_type == "Black"
-        assert tea.steep_time_minutes == 3
-        assert tea.steep_temperature_fahrenheit == 0
-        assert tea.steep_count == 0
+    def test_to_dict(self, app):
+        """Test dictionary conversion"""
+        with app.app_context():
+            now = datetime.utcnow()
+            tea = Tea(
+                name="Green Tea",
+                type="Green",
+                steep_time=120,
+                steep_temperature=80,
+                steep_count=1,
+                notes="Test notes",
+                user_id=1,
+                created_at=now,
+                updated_at=now
+            )
+            tea_dict = tea.to_dict()
+            assert tea_dict["name"] == "Green Tea"
+            assert tea_dict["type"] == "Green"
+            assert tea_dict["steep_time"] == 120
+            assert tea_dict["steep_temperature"] == 80
+            assert tea_dict["steep_count"] == 1
+            assert tea_dict["notes"] == "Test notes"
+            assert tea_dict["created_at"] == now.isoformat()
+            assert tea_dict["updated_at"] == now.isoformat()
 
-    def test_init_with_steep_temperature(self):
-        tea = Tea("Earl Grey", "Black", steep_temperature_fahrenheit=200)
-        assert tea.name == "Earl Grey"
-        assert tea.tea_type == "Black"
-        assert tea.steep_time_minutes == 0
-        assert tea.steep_temperature_fahrenheit == 200
-        assert tea.steep_count == 0
+    def test_repr(self, app):
+        """Test string representation"""
+        with app.app_context():
+            tea = Tea(
+                name="Earl Grey",
+                type="Black",
+                steep_time=180,
+                steep_temperature=95,
+                notes="Test notes",
+                user_id=1
+            )
+            assert repr(tea) == '<Tea Earl Grey>'
 
-    def test_init_with_steep_count(self):
-        tea = Tea("Earl Grey", "Black", steep_count=2)
-        assert tea.name == "Earl Grey"
-        assert tea.tea_type == "Black"
-        assert tea.steep_time_minutes == 0
-        assert tea.steep_temperature_fahrenheit == 0
-        assert tea.steep_count == 2
+    def test_required_fields(self, app):
+        """Test that required fields raise error when missing"""
+        with app.app_context():
+            with pytest.raises(Exception):  # SQLAlchemy will raise an error
+                Tea().save()  # Missing required fields
 
-    def test_init_with_all_params(self):
-        tea = Tea("Green Tea", "Green", steep_time_minutes=2,
-                 steep_temperature_fahrenheit=175, steep_count=1)
-        assert tea.name == "Green Tea"
-        assert tea.tea_type == "Green"
-        assert tea.steep_time_minutes == 2
-        assert tea.steep_temperature_fahrenheit == 175
-        assert tea.steep_count == 1
+            with pytest.raises(Exception):
+                Tea(name="Test Tea").save()  # Missing type
 
-    def test_repr(self):
-        tea = Tea("Earl Grey", "Black", steep_time_minutes=3, steep_temperature_fahrenheit=200)
-        expected = 'Tea(name="Earl Grey", tea_type="Black", steep_time_minutes=3, steep_temperature_fahrenheit=200, steep_count=0)'
-        assert repr(tea) == expected
-
-    def test_eq(self):
-        tea1 = Tea("Earl Grey", "Black", steep_time_minutes=3)
-        tea2 = Tea("Earl Grey", "Black", steep_time_minutes=3)
-        assert tea1 == tea2
-
-    def test_eq_different_times(self):
-        tea1 = Tea("Earl Grey", "Black", steep_time_minutes=3)
-        tea2 = Tea("Earl Grey", "Black", steep_time_minutes=4)
-        assert tea1 != tea2
-
-    def test_to_dict(self):
-        tea = Tea("Earl Grey", "Black", steep_time_minutes=3)
-        expected_dict = {
-            "Name": "Earl Grey",
-            "Type": "Black",
-            "SteepTimeMinutes": 3,
-            "SteepTemperatureFahrenheit": 0,
-            "SteepCount": 0
-        }
-        assert tea.to_dict() == expected_dict
-
-    def test_from_dict(self):
-        tea_dict = {
-            "Name": "Earl Grey",
-            "Type": "Black",
-            "SteepTimeMinutes": 3,
-            "SteepTemperatureFahrenheit": 200,
-            "SteepCount": 2
-        }
-        tea = Tea.from_dict(tea_dict)
-        assert tea.name == "Earl Grey"
-        assert tea.tea_type == "Black"
-        assert tea.steep_time_minutes == 3
-        assert tea.steep_temperature_fahrenheit == 200
-        assert tea.steep_count == 2
-
-    def test_from_dict_missing_fields(self):
-        tea_dict = {
-            "Name": "Earl Grey",
-            "Type": "Black"
-        }
-        tea = Tea.from_dict(tea_dict)
-        assert tea.name == "Earl Grey"
-        assert tea.tea_type == "Black"
-        assert tea.steep_time_minutes == 0
-        assert tea.steep_temperature_fahrenheit == 0
-        assert tea.steep_count == 0
-
-    def test_from_dict_invalid_name(self):
-        with pytest.raises(ValueError):
-            Tea.from_dict({"Type": "Black"})
-
-    def test_from_dict_invalid_type(self):
-        with pytest.raises(ValueError):
-            Tea.from_dict({"Name": "Earl Grey"})
+            with pytest.raises(Exception):
+                Tea(name="Test Tea", type="Black").save()  # Missing user_id
