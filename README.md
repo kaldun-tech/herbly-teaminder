@@ -222,17 +222,6 @@ If you encounter permission issues:
    flask db downgrade
    ```
 
-### Testing Database
-
-The test configuration uses SQLite in-memory database for fast, isolated tests:
-```bash
-# Run tests
-pytest
-
-# Run tests with coverage
-pytest --cov=app tests/
-```
-
 ### Monitoring and Maintenance
 
 1. **Check Database Status**:
@@ -304,4 +293,4 @@ The application uses Flask-Talisman to implement security headers:
 Check code quality: `python -m pylint **/*.py`
 
 # Testing
-Run tests: `pytest tests/`
+- Run tests: `python -m pytest tests/`
