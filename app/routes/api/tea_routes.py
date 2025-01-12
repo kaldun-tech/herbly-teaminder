@@ -1,5 +1,6 @@
 """Routes for Teas"""
 from functools import wraps
+from json import JSONDecodeError
 from flask import Blueprint, jsonify, request, current_app
 from flask_login import login_required, current_user
 from app.extensions import db
@@ -38,14 +39,14 @@ def create_tea_routes():
             return None, (jsonify({'error': 'Tea not found'}), 404)
         return tea, None
 
-    @tea_routes.route('/api/teas', methods=['GET'])
+    @tea_routes.route('/teas', methods=['GET'])
     @login_required
     def get_teas():
         """Get all teas for the current user"""
         teas = Tea.query.filter_by(user_id=current_user.id).all()
         return jsonify([tea.to_dict() for tea in teas])
 
-    @tea_routes.route('/api/teas', methods=['POST'])
+    @tea_routes.route('/teas', methods=['POST'])
     @login_required
     @handle_tea_errors
     def create_tea():
@@ -77,7 +78,7 @@ def create_tea_routes():
         
         return jsonify(tea.to_dict()), 201
 
-    @tea_routes.route('/api/teas/<int:tea_id>', methods=['GET'])
+    @tea_routes.route('/teas/<int:tea_id>', methods=['GET'])
     @login_required
     def get_tea(tea_id):
         """Get a specific tea"""
@@ -86,7 +87,7 @@ def create_tea_routes():
             return error
         return jsonify(tea.to_dict())
 
-    @tea_routes.route('/api/teas/<int:tea_id>', methods=['PUT'])
+    @tea_routes.route('/teas/<int:tea_id>', methods=['PUT'])
     @login_required
     @handle_tea_errors
     def update_tea(tea_id):
@@ -106,7 +107,7 @@ def create_tea_routes():
         db.session.commit()
         return jsonify(tea.to_dict())
 
-    @tea_routes.route('/api/teas/<int:tea_id>', methods=['DELETE'])
+    @tea_routes.route('/teas/<int:tea_id>', methods=['DELETE'])
     @login_required
     def delete_tea(tea_id):
         """Delete a tea"""
@@ -118,7 +119,7 @@ def create_tea_routes():
         db.session.commit()
         return '', 204
 
-    @tea_routes.route('/api/teas/<int:tea_id>/steep', methods=['POST'])
+    @tea_routes.route('/teas/<int:tea_id>/steep', methods=['POST'])
     @login_required
     def increment_steep_count(tea_id):
         """Increment the steep count for a tea"""
@@ -130,7 +131,7 @@ def create_tea_routes():
         db.session.commit()
         return jsonify(tea.to_dict())
 
-    @tea_routes.route('/api/teas/<int:tea_id>/steep', methods=['DELETE'])
+    @tea_routes.route('/teas/<int:tea_id>/steep', methods=['DELETE'])
     @login_required
     def clear_steep_count(tea_id):
         """Reset the steep count for a tea to 0"""

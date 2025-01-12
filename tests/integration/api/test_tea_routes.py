@@ -1,11 +1,11 @@
 """Tests for tea routes"""
 import json
 import pytest
-from flask import Flask
+from flask import Flask, jsonify
 from app.models.tea import Tea
 from app.models.user import User
 from app.routes.api.tea_routes import create_tea_routes
-from app.extensions import db
+from app.extensions import db, login_manager
 
 @pytest.fixture
 def app():
@@ -20,10 +20,21 @@ def app():
     
     # Initialize extensions
     db.init_app(app)
+    login_manager.init_app(app)
+    
+    # Configure unauthorized handler for API routes
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    # Configure user loader
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
     
     # Register blueprint
     tea_bp = create_tea_routes()
-    app.register_blueprint(tea_bp)
+    app.register_blueprint(tea_bp, url_prefix='/api')
     
     return app
 
@@ -52,14 +63,13 @@ def auth_client(client, app):
         
         # Get fresh user instance from database
         user = db.session.get(User, user.id)
-
-        # Log in
-        client.post('/auth/login', json={
-            'username': 'testuser',
-            'password': 'password123'
-        })
-
-        yield client, user
+        
+        # Log in the user
+        with client.session_transaction() as sess:
+            sess['_user_id'] = str(user.id)
+            sess['_fresh'] = True
+        
+        return client, user
 
 @pytest.fixture
 def sample_tea(auth_client):
