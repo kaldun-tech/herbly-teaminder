@@ -1,8 +1,25 @@
 """Tests for Tea model"""
 import pytest
 from datetime import datetime
+from flask import Flask
 from app.models.tea import Tea
 from app.extensions import db
+
+@pytest.fixture
+def app():
+    """Create application for testing"""
+    app = Flask(__name__)
+    app.config.update({
+        'TESTING': True,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+        'SECRET_KEY': 'TEST-secret-key-NOT-FOR-PRODUCTION'
+    })
+    
+    # Initialize extensions
+    db.init_app(app)
+    
+    return app
 
 class TestTeaModel:
     """Test cases for Tea model"""

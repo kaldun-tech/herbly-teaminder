@@ -30,7 +30,7 @@ def app():
     # Configure user loader
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
     
     # Register blueprint
     tea_bp = create_tea_routes()
@@ -155,8 +155,9 @@ def test_delete_tea(auth_client, sample_tea):
     client, _ = auth_client
     response = client.delete(f'/api/teas/{sample_tea.id}')
     assert response.status_code == 204
-    # Verify tea is deleted
-    tea = Tea.query.get(sample_tea.id)
+    
+    # Verify tea was deleted
+    tea = db.session.get(Tea, sample_tea.id)
     assert tea is None
 
 def test_increment_steep_count(auth_client, sample_tea):

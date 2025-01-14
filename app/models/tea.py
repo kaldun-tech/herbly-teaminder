@@ -19,6 +19,19 @@ class Tea(db.Model):
     # Foreign key to user
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
+    def __init__(self, name=None, type=None, steep_time=None, steep_temperature=None, 
+                 notes=None, user_id=None, steep_count=None, created_at=None, updated_at=None):
+        """Initialize tea"""
+        self.name = name
+        self.type = type
+        self.steep_time = steep_time
+        self.steep_temperature = steep_temperature
+        self.notes = notes
+        self.user_id = user_id
+        self.steep_count = steep_count if steep_count is not None else 0
+        self.created_at = created_at if created_at is not None else datetime.utcnow()
+        self.updated_at = updated_at if updated_at is not None else datetime.utcnow()
+
     def to_dict(self):
         """Convert tea to dictionary"""
         return {
