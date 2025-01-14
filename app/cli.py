@@ -61,15 +61,16 @@ def create_admin_command(username, email, password):
         )
         admin.set_password(password)
 
+        # pylint: disable=no-member
         db.session.add(admin)
         db.session.commit()
         click.echo(f'Successfully created admin user: {username}')
     except sqlalchemy.exc.IntegrityError:
         click.echo('Error: Database integrity error (duplicate username or email)')
-        db.session.rollback()
+        db.session.rollback()  # pylint: disable=no-member
     except sqlalchemy.exc.SQLAlchemyError as e:
         click.echo(f'Database error creating admin user: {e}')
-        db.session.rollback()
+        db.session.rollback()  # pylint: disable=no-member
 
 @click.command('rotate-key')
 @click.option('--force', is_flag=True, help='Force key rotation even if not due')

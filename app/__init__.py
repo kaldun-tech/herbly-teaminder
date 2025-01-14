@@ -63,7 +63,7 @@ def create_app(config=None):
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    
+
     # Initialize login manager
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'

@@ -2,8 +2,8 @@
 Class for interacting with the DynamoDB table.
 See https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html
 """
-import boto3
 import uuid
+import boto3
 
 class TeaDao:
     def __init__(self, region_name, table_name):

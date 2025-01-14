@@ -7,7 +7,7 @@ class Config:
     TESTING = False
     RATELIMIT_STORAGE_URL = os.environ.get('RATELIMIT_STORAGE_URL', 'memory://')
     FORCE_HTTPS = os.environ.get('FORCE_HTTPS', 'True').lower() == 'true'
-    
+
     # AWS Configuration
     AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
     DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME', 'teas')
