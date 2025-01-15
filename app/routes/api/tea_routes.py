@@ -1,11 +1,10 @@
 """Routes for Teas"""
 from functools import wraps
 from json import JSONDecodeError
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models.tea import Tea
-from datetime import datetime
 
 def create_tea_routes():
     """Factory function to create tea routes blueprint"""
@@ -72,10 +71,10 @@ def create_tea_routes():
             notes=data.get('notes'),
             user_id=current_user.id
         )
-        
+
         db.session.add(tea)
         db.session.commit()
-        
+
         return jsonify(tea.to_dict()), 201
 
     @tea_routes.route('/teas/<int:tea_id>', methods=['GET'])
@@ -97,13 +96,13 @@ def create_tea_routes():
             return error
 
         data = validate_json()
-        
+
         # Update fields if present in request
         updatable_fields = ['name', 'type', 'steep_time', 'steep_temperature', 'notes']
         for field in updatable_fields:
             if field in data:
                 setattr(tea, field, data[field])
-        
+
         db.session.commit()
         return jsonify(tea.to_dict())
 

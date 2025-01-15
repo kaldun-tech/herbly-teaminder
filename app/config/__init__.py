@@ -1,5 +1,4 @@
 """Configuration package"""
-from app.config.default import DefaultConfig
-from app.config.testing import TestingConfig
+from app.config.default import Config as DefaultConfig
 
-__all__ = ['DefaultConfig', 'TestingConfig']
+__all__ = ['DefaultConfig']

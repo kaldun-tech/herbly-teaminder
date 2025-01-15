@@ -4,6 +4,7 @@ import logging
 from flask import Flask, jsonify
 from app.extensions import db, migrate, login_manager
 from app.security.key_management import validate_secret_key, KeyValidationError
+from app.error_handlers import register_error_handlers
 
 def register_models():
     """Import models after db is initialized"""
@@ -15,7 +16,7 @@ def register_blueprints(app):
     """Register all blueprints"""
     from app.routes.auth.auth_routes import create_auth_routes  # pylint: disable=import-outside-toplevel
     from app.routes.api.tea_routes import create_tea_routes    # pylint: disable=import-outside-toplevel
-    from app.routes.pages import create_pages_routes           # pylint: disable=import-outside-toplevel
+    from app.routes.pages.pages_routes import create_pages_routes   # pylint: disable=import-outside-toplevel
     auth_bp = create_auth_routes()
     tea_bp = create_tea_routes()
     page_bp = create_pages_routes()
@@ -84,6 +85,9 @@ def create_app(config=None):
 
     # Register all blueprints
     register_blueprints(app)
+
+    # Register error handlers
+    register_error_handlers(app)
 
     # Health check endpoint
     @app.route('/health')
