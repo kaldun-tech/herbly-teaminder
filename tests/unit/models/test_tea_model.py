@@ -29,7 +29,7 @@ class TestTeaModel:
         with app.app_context():
             tea = Tea(
                 name="Earl Grey",
-                type="Black",
+                tea_type="Black",
                 steep_time=180,  # 3 minutes in seconds
                 steep_temperature=95,  # celsius
                 notes="Test notes",
@@ -51,7 +51,7 @@ class TestTeaModel:
             now = datetime.utcnow()
             tea = Tea(
                 name="Green Tea",
-                type="Green",
+                tea_type="Green",
                 steep_time=120,
                 steep_temperature=80,
                 steep_count=1,
@@ -75,7 +75,7 @@ class TestTeaModel:
         with app.app_context():
             tea = Tea(
                 name="Earl Grey",
-                type="Black",
+                tea_type="Black",
                 steep_time=180,
                 steep_temperature=95,
                 notes="Test notes",
@@ -93,4 +93,4 @@ class TestTeaModel:
                 Tea(name="Test Tea").save()  # Missing type
 
             with pytest.raises(Exception):
-                Tea(name="Test Tea", type="Black").save()  # Missing user_id
+                Tea(name="Test Tea", tea_type="Black").save()  # Missing user_id

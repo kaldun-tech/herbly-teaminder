@@ -21,11 +21,11 @@ class Tea(db.Model):
                           onupdate=lambda: datetime.now(timezone.utc).replace(tzinfo=None))  # pylint: disable=no-member
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # pylint: disable=no-member
 
-    def __init__(self, name=None, type=None, steep_time=None, steep_temperature=None,
+    def __init__(self, name=None, tea_type=None, steep_time=None, steep_temperature=None,
                 notes=None, user_id=None, steep_count=None, created_at=None, updated_at=None):
         """Initialize tea"""
         self.name = name
-        self.type = type
+        self.type = tea_type
         self.steep_time = steep_time
         self.steep_temperature = steep_temperature
         self.notes = notes

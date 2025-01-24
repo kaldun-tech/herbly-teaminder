@@ -78,7 +78,7 @@ def sample_tea(auth_client):
     with client.application.app_context():
         tea = Tea(
             name='Test Green Tea',
-            type='green',
+            tea_type='green',
             steep_time=180,
             steep_temperature=80,
             notes='Test notes',
@@ -194,7 +194,7 @@ def test_user_cannot_access_others_tea(auth_client, app):
         
         tea = Tea(
             name='Other User Tea',
-            type='black',
+            tea_type='black',
             steep_time=180,
             steep_temperature=100,
             user_id=user2.id

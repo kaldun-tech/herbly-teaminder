@@ -65,7 +65,7 @@ def create_tea_routes():
 
         tea = Tea(
             name=data['name'],
-            type=data['type'],
+            tea_type=data['type'],
             steep_time=data['steep_time'],
             steep_temperature=data['steep_temperature'],
             notes=data.get('notes'),
